@@ -1,0 +1,54 @@
+#!/bin/bash
+# tmux-theme — switch gpakosz/.tmux colour themes
+# Usage: tmux-theme <theme-name>
+# Themes are stored in ~/.tmux/themes/<name>.conf
+# Config file uses # THEME_START / # THEME_END markers
+
+THEMES_DIR="$HOME/.tmux/themes"
+CONF="$HOME/.tmux.conf.local"
+THEME_NAME="$1"
+
+if [ -z "$THEME_NAME" ]; then
+    echo "Available themes:"
+    for f in "$THEMES_DIR"/*.conf; do
+        basename "$f" .conf
+    done
+    exit 0
+fi
+
+THEME_FILE="$THEMES_DIR/$THEME_NAME.conf"
+
+if [ ! -f "$THEME_FILE" ]; then
+    echo "Error: Theme '$THEME_NAME' not found"
+    echo "Available themes:"
+    for f in "$THEMES_DIR"/*.conf; do
+        basename "$f" .conf
+    done
+    exit 1
+fi
+
+# Build the replacement block
+THEME_CONTENT=$(cat "$THEME_FILE")
+
+# Replace everything between THEME_START and THEME_END markers
+awk -v theme="$THEME_CONTENT" '
+    /^# THEME_START/ {
+        print "# THEME_START"
+        print theme
+        skip = 1
+        next
+    }
+    /^# THEME_END/ {
+        print "# THEME_END"
+        skip = 0
+        next
+    }
+    !skip { print }
+' "$CONF" > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
+
+# Reload tmux config (-q suppresses parsing warnings)
+tmux source-file -q "$HOME/.tmux.conf" >/dev/null 2>&1
+
+# Save current theme name and show message via tmux status line
+tmux set-environment -g TMUX_THEME "$THEME_NAME" 2>/dev/null
+tmux display-message "theme: $THEME_NAME"

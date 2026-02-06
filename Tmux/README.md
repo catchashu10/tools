@@ -26,17 +26,33 @@ Terminal multiplexer with gpakosz/.tmux framework, custom themes, and capture to
 | Unified capture | `~/.local/bin/capture` | Auto-detect Zellij/Tmux capture |
 | Capture output | `~/.tmux-context/` | Captured pane contents |
 
-## Symlinks in This Folder
+## Repo Structure
 
 ```
 ~/Tools/Tmux/
-├── config.local        → ~/.tmux.conf.local
-├── framework           → ~/.tmux/
-├── themes              → ~/.tmux/themes/
-├── scripts-tmux-theme  → ~/.local/bin/tmux-theme
-├── scripts-tmux-capture→ ~/.local/bin/tmux-capture
-├── scripts-capture     → ~/.local/bin/capture
-└── capture-output      → ~/.tmux-context/
+├── README.md                         # This file
+├── install.sh                        # Run this on a new machine
+├── config/
+│   └── tmux.conf.local               # All tmux customizations
+├── themes/
+│   ├── catppuccin-mocha.conf
+│   ├── dracula.conf
+│   ├── nord.conf
+│   ├── tokyo-night.conf
+│   └── default.conf
+└── scripts/
+    ├── tmux-theme                    # Theme switcher
+    ├── tmux-capture                  # Capture pane contents
+    └── capture                       # Unified capture (Zellij/Tmux)
+```
+
+After install, symlinks point FROM dotfile locations TO this repo:
+```
+~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
+~/.tmux/themes/         → ~/Tools/Tmux/themes/
+~/.local/bin/tmux-theme → ~/Tools/Tmux/scripts/tmux-theme
+~/.local/bin/tmux-capture → ~/Tools/Tmux/scripts/tmux-capture
+~/.local/bin/capture    → ~/Tools/Tmux/scripts/capture
 ```
 
 ## Configuration
@@ -152,33 +168,16 @@ bind C-c command-prompt -p "new-session" "new-session -c '#{pane_current_path}' 
 
 ## Replicating on a New Machine
 
-1. Clone gpakosz/.tmux:
-   ```bash
-   git clone https://github.com/gpakosz/.tmux.git ~/.tmux
-   ln -s -f .tmux/.tmux.conf ~/.tmux.conf
-   ```
+```bash
+# 1. Clone the repo
+git clone <your-repo-url> ~/Tools
 
-2. Copy config:
-   ```bash
-   cp ~/Tools/Tmux/config.local ~/.tmux.conf.local
-   ```
+# 2. Run the installer
+~/Tools/Tmux/install.sh
 
-3. Copy themes:
-   ```bash
-   cp -r ~/Tools/Tmux/themes/ ~/.tmux/themes/
-   ```
+# 3. Start tmux and install plugins
+tmux new -s main
+# Press Ctrl-a I (wait for plugins to install)
+```
 
-4. Copy scripts:
-   ```bash
-   cp ~/Tools/Tmux/scripts-tmux-theme ~/.local/bin/tmux-theme
-   cp ~/Tools/Tmux/scripts-tmux-capture ~/.local/bin/tmux-capture
-   cp ~/Tools/Tmux/scripts-capture ~/.local/bin/capture
-   chmod +x ~/.local/bin/tmux-theme ~/.local/bin/tmux-capture ~/.local/bin/capture
-   ```
-
-5. Create output directory:
-   ```bash
-   mkdir -p ~/.tmux-context
-   ```
-
-6. Start tmux and install plugins: `Ctrl-a I`
+That's it. The installer handles everything: tmux installation, gpakosz framework, config symlinks, themes, scripts, clipboard tools, and PATH setup.

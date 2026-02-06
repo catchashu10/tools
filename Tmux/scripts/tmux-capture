@@ -1,0 +1,152 @@
+#!/bin/bash
+# Capture all Tmux panes to a single file for easy AI context sharing
+# No focus switching needed - direct pane targeting
+
+OUTPUT_DIR="${HOME}/.tmux-context"
+OUTPUT_FILE="${OUTPUT_DIR}/context.md"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+mkdir -p "$OUTPUT_DIR"
+
+# Get session name - from env var (set by capture script) or current session
+if [ -n "$TMUX_TARGET_SESSION" ]; then
+    SESSION_NAME="$TMUX_TARGET_SESSION"
+elif [ -n "$TMUX" ]; then
+    SESSION_NAME=$(tmux display-message -p '#S')
+else
+    echo "Not in a tmux session and no target session specified"
+    exit 1
+fi
+
+# Verify session exists
+if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+    echo "Tmux session '$SESSION_NAME' not found"
+    exit 1
+fi
+
+# Get all panes in the session: window_index, pane_index, pane_id, pane_title, pane_active
+mapfile -t PANE_INFO < <(tmux list-panes -s -t "$SESSION_NAME" -F '#{window_index}|#{window_name}|#{pane_index}|#{pane_id}|#{pane_title}|#{pane_active}')
+
+PANE_COUNT=${#PANE_INFO[@]}
+
+# Build arrays
+declare -a WINDOWS
+declare -a PANE_INDICES
+declare -a PANE_IDS
+declare -a PANE_TITLES
+declare -a PANE_ACTIVE
+
+for i in "${!PANE_INFO[@]}"; do
+    IFS='|' read -r win_idx win_name pane_idx pane_id pane_title pane_active <<< "${PANE_INFO[$i]}"
+    WINDOWS[$i]="$win_idx:$win_name"
+    PANE_INDICES[$i]="$pane_idx"
+    PANE_IDS[$i]="$pane_id"
+    PANE_TITLES[$i]="${pane_title:-pane-$pane_idx}"
+    PANE_ACTIVE[$i]="$pane_active"
+done
+
+# Function to print nested box summary
+print_nested_summary() {
+    echo "╔═══════════════════════════════════════════════════════════════╗"
+    printf "║ %-61s ║\n" "Session: $SESSION_NAME"
+    printf "║ %-61s ║\n" "Captured: $TIMESTAMP"
+    echo "╠═══════════════════════════════════════════════════════════════╣"
+
+    # Group panes by window
+    local current_window=""
+    local first_window=true
+
+    for i in "${!PANE_INFO[@]}"; do
+        IFS='|' read -r win_idx win_name pane_idx pane_id pane_title pane_active <<< "${PANE_INFO[$i]}"
+        local window_key="$win_idx:$win_name"
+
+        # New window - print window header
+        if [ "$window_key" != "$current_window" ]; then
+            if [ "$first_window" = false ]; then
+                echo "║ └────┴────────────────────┴────────────────────────────────┘ ║"
+            fi
+            first_window=false
+            current_window="$window_key"
+
+            echo "║ ┌───────────────────────────────────────────────────────────┐ ║"
+            printf "║ │ %-57s │ ║\n" "Window $win_idx: $win_name"
+            echo "║ ├────┬────────────────────┬────────────────────────────────┤ ║"
+            printf "║ │ %-2s │ %-18s │ %-30s │ ║\n" "#" "Pane" "Active"
+            echo "║ ├────┼────────────────────┼────────────────────────────────┤ ║"
+        fi
+
+        local active_mark=""
+        [ "$pane_active" = "1" ] && active_mark="*"
+        local display_title="${pane_title:-pane-$pane_idx}"
+        [ ${#display_title} -gt 18 ] && display_title="${display_title:0:15}..."
+        printf "║ │ %-2s │ %-18s │ %-30s │ ║\n" "$pane_idx" "$display_title" "$active_mark"
+    done
+
+    if [ "$first_window" = false ]; then
+        echo "║ └────┴────────────────────┴────────────────────────────────┘ ║"
+    fi
+
+    echo "╚═══════════════════════════════════════════════════════════════╝"
+}
+
+# Build context file
+cat > "$OUTPUT_FILE" << 'HEADER'
+# Tmux Session Context
+
+HEADER
+
+echo '```' >> "$OUTPUT_FILE"
+print_nested_summary >> "$OUTPUT_FILE"
+echo '```' >> "$OUTPUT_FILE"
+
+cat >> "$OUTPUT_FILE" << EOF
+
+## Contents
+
+EOF
+
+# Capture each pane - NO FOCUS SWITCHING NEEDED
+for i in "${!PANE_INFO[@]}"; do
+    IFS='|' read -r win_idx win_name pane_idx pane_id pane_title pane_active <<< "${PANE_INFO[$i]}"
+
+    PANE_FILE="${OUTPUT_DIR}/pane-${win_idx}-${pane_idx}.txt"
+    DISPLAY_NAME="${pane_title:-pane-$pane_idx}"
+
+    # Capture pane directly by ID - no focus switch!
+    tmux capture-pane -t "$pane_id" -p -S -1000 > "$PANE_FILE"
+
+    cat >> "$OUTPUT_FILE" << EOF
+### Window $win_idx / $DISPLAY_NAME (pane $pane_idx)
+\`\`\`
+$(tail -50 "$PANE_FILE")
+\`\`\`
+
+EOF
+done
+
+# Footer
+cat >> "$OUTPUT_FILE" << EOF
+---
+*Captured ${PANE_COUNT} panes from session "${SESSION_NAME}"*
+EOF
+
+# Terminal output
+echo ""
+print_nested_summary
+echo ""
+echo "Files:"
+echo "┌───────────────────────┬──────────┬─────────────────────────────────┐"
+printf "│ %-21s │ %-8s │ %-31s │\n" "File" "Size" "Content"
+echo "├───────────────────────┼──────────┼─────────────────────────────────┤"
+printf "│ %-21s │ %-8s │ %-31s │\n" "context.md" "$(du -h "$OUTPUT_FILE" | cut -f1)" "Summary + last 50 lines/pane"
+
+for i in "${!PANE_INFO[@]}"; do
+    IFS='|' read -r win_idx win_name pane_idx pane_id pane_title pane_active <<< "${PANE_INFO[$i]}"
+    PANE_FILE="${OUTPUT_DIR}/pane-${win_idx}-${pane_idx}.txt"
+    DISPLAY_NAME="${pane_title:-pane-$pane_idx}"
+    [ ${#DISPLAY_NAME} -gt 20 ] && DISPLAY_NAME="${DISPLAY_NAME:0:17}..."
+    printf "│ %-21s │ %-8s │ %-31s │\n" "pane-${win_idx}-${pane_idx}.txt" "$(du -h "$PANE_FILE" | cut -f1)" "Full: $DISPLAY_NAME"
+done
+echo "└───────────────────────┴──────────┴─────────────────────────────────┘"
+echo ""
+echo "Location: $OUTPUT_DIR"

@@ -1,0 +1,57 @@
+#!/bin/bash
+# Unified capture command - captures Zellij or Tmux sessions
+# Usage: capture [session_name]
+#   No args: captures current session (auto-detects multiplexer)
+#   With arg: captures specified session
+
+TARGET_SESSION="$1"
+
+# Detect which multiplexer is available/running
+ZELLIJ_SESSIONS=$(zellij list-sessions 2>/dev/null | grep -v EXITED | sed 's/\x1b\[[0-9;]*m//g' | awk '{print $1}')
+TMUX_SESSIONS=$(tmux list-sessions -F '#S' 2>/dev/null)
+
+# If session specified, find which multiplexer it belongs to
+if [ -n "$TARGET_SESSION" ]; then
+    if echo "$ZELLIJ_SESSIONS" | grep -q "^${TARGET_SESSION}$"; then
+        echo "Capturing Zellij session: $TARGET_SESSION"
+        ZELLIJ_SESSION_NAME="$TARGET_SESSION" zellij-capture
+        exit $?
+    elif echo "$TMUX_SESSIONS" | grep -q "^${TARGET_SESSION}$"; then
+        echo "Capturing Tmux session: $TARGET_SESSION"
+        # TODO: Add session targeting to tmux-capture
+        TMUX_TARGET_SESSION="$TARGET_SESSION" tmux-capture
+        exit $?
+    else
+        echo "Session '$TARGET_SESSION' not found"
+        echo ""
+        echo "Available sessions:"
+        [ -n "$ZELLIJ_SESSIONS" ] && echo "  Zellij: $ZELLIJ_SESSIONS" | tr '\n' ' ' && echo
+        [ -n "$TMUX_SESSIONS" ] && echo "  Tmux: $TMUX_SESSIONS" | tr '\n' ' ' && echo
+        exit 1
+    fi
+fi
+
+# No session specified - use current
+if [ -n "$ZELLIJ" ]; then
+    exec zellij-capture
+elif [ -n "$TMUX" ]; then
+    exec tmux-capture
+else
+    # Not in a multiplexer - list available sessions
+    echo "Not in a terminal multiplexer"
+    echo ""
+    if [ -n "$ZELLIJ_SESSIONS" ] || [ -n "$TMUX_SESSIONS" ]; then
+        echo "Available sessions to capture:"
+        for s in $ZELLIJ_SESSIONS; do
+            echo "  capture $s  (Zellij)"
+        done
+        for s in $TMUX_SESSIONS; do
+            echo "  capture $s  (Tmux)"
+        done
+    else
+        echo "No active sessions found. Start one with:"
+        echo "  zellij"
+        echo "  tmux new -s main"
+    fi
+    exit 1
+fi
