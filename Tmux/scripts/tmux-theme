@@ -27,14 +27,17 @@ if [ ! -f "$THEME_FILE" ]; then
     exit 1
 fi
 
-# Build the replacement block — strip any \r (CRLF) as safety net
-THEME_CONTENT=$(tr -d '\r' < "$THEME_FILE")
-
 # Replace everything between THEME_START and THEME_END markers
-if ! awk -v theme="$THEME_CONTENT" '
+# Uses getline to read theme file directly — avoids passing multi-line
+# content via -v which breaks on macOS BSD awk
+if ! awk -v theme_file="$THEME_FILE" '
     /^# THEME_START/ {
         print "# THEME_START"
-        print theme
+        while ((getline line < theme_file) > 0) {
+            gsub(/\r$/, "", line)
+            print line
+        }
+        close(theme_file)
         skip = 1
         next
     }
@@ -43,7 +46,10 @@ if ! awk -v theme="$THEME_CONTENT" '
         skip = 0
         next
     }
-    !skip { print }
+    !skip {
+        gsub(/\r$/, "")
+        print
+    }
 ' "$CONF" > "$CONF.tmp"; then
     rm -f "$CONF.tmp"
     tmux display-message "Error: failed to apply theme '$THEME_NAME'" 2>/dev/null
