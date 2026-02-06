@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # tmux-theme — switch gpakosz/.tmux colour themes
 # Usage: tmux-theme <theme-name>
 # Themes are stored in ~/.tmux/themes/<name>.conf
@@ -27,11 +27,11 @@ if [ ! -f "$THEME_FILE" ]; then
     exit 1
 fi
 
-# Build the replacement block
-THEME_CONTENT=$(cat "$THEME_FILE")
+# Build the replacement block — strip any \r (CRLF) as safety net
+THEME_CONTENT=$(tr -d '\r' < "$THEME_FILE")
 
 # Replace everything between THEME_START and THEME_END markers
-awk -v theme="$THEME_CONTENT" '
+if ! awk -v theme="$THEME_CONTENT" '
     /^# THEME_START/ {
         print "# THEME_START"
         print theme
@@ -44,10 +44,17 @@ awk -v theme="$THEME_CONTENT" '
         next
     }
     !skip { print }
-' "$CONF" > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
+' "$CONF" > "$CONF.tmp"; then
+    rm -f "$CONF.tmp"
+    tmux display-message "Error: failed to apply theme '$THEME_NAME'" 2>/dev/null
+    echo "Error: awk failed to process config"
+    exit 1
+fi
+
+mv "$CONF.tmp" "$CONF"
 
 # Reload tmux config (-q suppresses parsing warnings)
-tmux source-file -q "$HOME/.tmux.conf" >/dev/null 2>&1
+tmux source-file -q "$HOME/.tmux.conf" 2>/dev/null
 
 # Save current theme name and show message via tmux status line
 tmux set-environment -g TMUX_THEME "$THEME_NAME" 2>/dev/null

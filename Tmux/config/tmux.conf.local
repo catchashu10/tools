@@ -415,11 +415,11 @@ bind C-c command-prompt -p "new-session" "new-session -c '#{pane_current_path}' 
 
 # theme switcher (prefix + T to pick a theme)
 bind T display-menu -T "Select Theme" \
-  "Catppuccin Mocha" m "run-shell -b '$HOME/.local/bin/tmux-theme catppuccin-mocha >/dev/null 2>&1'" \
-  "Dracula"          d "run-shell -b '$HOME/.local/bin/tmux-theme dracula >/dev/null 2>&1'" \
-  "Nord"             n "run-shell -b '$HOME/.local/bin/tmux-theme nord >/dev/null 2>&1'" \
-  "Tokyo Night"      t "run-shell -b '$HOME/.local/bin/tmux-theme tokyo-night >/dev/null 2>&1'" \
-  "Default"          o "run-shell -b '$HOME/.local/bin/tmux-theme default >/dev/null 2>&1'"
+  "Catppuccin Mocha" m "run-shell -b '$HOME/.local/bin/tmux-theme catppuccin-mocha'" \
+  "Dracula"          d "run-shell -b '$HOME/.local/bin/tmux-theme dracula'" \
+  "Nord"             n "run-shell -b '$HOME/.local/bin/tmux-theme nord'" \
+  "Tokyo Night"      t "run-shell -b '$HOME/.local/bin/tmux-theme tokyo-night'" \
+  "Default"          o "run-shell -b '$HOME/.local/bin/tmux-theme default'"
 
 # display a message after toggling mouse support
 bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Unified capture command - captures Zellij or Tmux sessions
 # Usage: capture [session_name]
 #   No args: captures current session (auto-detects multiplexer)
@@ -7,7 +7,8 @@
 TARGET_SESSION="$1"
 
 # Detect which multiplexer is available/running
-ZELLIJ_SESSIONS=$(zellij list-sessions 2>/dev/null | grep -v EXITED | sed 's/\x1b\[[0-9;]*m//g' | awk '{print $1}')
+# Strip ANSI color codes — use $'\033' for portable escape char (macOS sed doesn't support \x1b)
+ZELLIJ_SESSIONS=$(zellij list-sessions 2>/dev/null | grep -v EXITED | sed $'s/\033\\[[0-9;]*m//g' | awk '{print $1}')
 TMUX_SESSIONS=$(tmux list-sessions -F '#S' 2>/dev/null)
 
 # If session specified, find which multiplexer it belongs to

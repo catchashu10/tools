@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Tmux setup installer (symlink mode)
 # Usage: git clone <repo> ~/Tools && ~/Tools/Tmux/install.sh
 #
@@ -83,11 +83,13 @@ fi
 # 7. Create directories
 mkdir -p "$HOME/.tmux-context"
 
-# 8. Install clipboard tool
-if ! command -v xsel >/dev/null 2>&1 && ! command -v xclip >/dev/null 2>&1; then
-    if command -v apt >/dev/null 2>&1; then
-        step "Installing xsel for clipboard support..."
-        sudo apt install -y xsel 2>/dev/null || warn "Could not install xsel"
+# 8. Install clipboard tool (Linux only — macOS has pbcopy built in)
+if [ "$(uname)" != "Darwin" ]; then
+    if ! command -v xsel >/dev/null 2>&1 && ! command -v xclip >/dev/null 2>&1; then
+        if command -v apt >/dev/null 2>&1; then
+            step "Installing xsel for clipboard support..."
+            sudo apt install -y xsel 2>/dev/null || warn "Could not install xsel"
+        fi
     fi
 fi
 

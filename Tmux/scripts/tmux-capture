@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Capture all Tmux panes to a single file for easy AI context sharing
 # No focus switching needed - direct pane targeting
 
@@ -25,7 +25,11 @@ if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
 fi
 
 # Get all panes in the session: window_index, pane_index, pane_id, pane_title, pane_active
-mapfile -t PANE_INFO < <(tmux list-panes -s -t "$SESSION_NAME" -F '#{window_index}|#{window_name}|#{pane_index}|#{pane_id}|#{pane_title}|#{pane_active}')
+# Using while-read instead of mapfile for macOS bash 3.2 compatibility
+PANE_INFO=()
+while IFS= read -r line; do
+    PANE_INFO+=("$line")
+done < <(tmux list-panes -s -t "$SESSION_NAME" -F '#{window_index}|#{window_name}|#{pane_index}|#{pane_id}|#{pane_title}|#{pane_active}')
 
 PANE_COUNT=${#PANE_INFO[@]}
 
