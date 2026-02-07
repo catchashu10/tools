@@ -1,13 +1,13 @@
 # Tools
 
-Centralized tracking of all tool configurations, scripts, and settings. Each subfolder contains symlinks to actual config files and a README documenting the setup.
+Centralized tracking of all tool configurations, scripts, and settings. Each subfolder contains the actual config files, and an installer that symlinks them into place.
 
 ## Purpose
 
 - Track all configurations in one place
 - Easily replicate setup on any new machine
 - Document settings, shortcuts, and known issues
-- Version control friendly (symlinks point to actual files)
+- Version control friendly (repo holds real files, dotfile locations are symlinks)
 
 ## Tool Index
 
@@ -22,13 +22,19 @@ Each tool folder follows this pattern:
 ```
 ~/Tools/<ToolName>/
 ├── README.md              # Full documentation
-├── config.*               # Symlink(s) to config files
-├── scripts-*              # Symlink(s) to scripts
-├── themes/                # Symlink to themes (if applicable)
-└── ...                    # Other relevant symlinks
+├── install.sh             # Installer (creates symlinks)
+├── config/                # Config files (the real files live here)
+├── scripts/               # Scripts (the real files live here)
+├── themes/                # Themes (if applicable)
+└── ...
 ```
 
-Symlinks point to the **actual file locations** (e.g., `~/.config/`, `~/.local/bin/`), so editing either the symlink or the original updates the same file.
+After running `install.sh`, symlinks point **from** dotfile locations **to** this repo:
+```
+~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
+~/.local/bin/tmux-theme → ~/Tools/Tmux/scripts/tmux-theme
+```
+Edit the files anywhere — the symlink ensures both paths reference the same file.
 
 ## Quick Setup on a New Machine
 
