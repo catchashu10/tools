@@ -170,7 +170,8 @@ bind C-c command-prompt -p "new-session" "new-session -c '#{pane_current_path}' 
 
 ```bash
 # 1. Clone the repo
-git clone <your-repo-url> ~/Tools
+git clone http://tools.ashukumar.com ~/Tools
+# or: git clone https://github.com/catchashu10/tools.git ~/Tools
 
 # 2. Run the installer
 ~/Tools/Tmux/install.sh
