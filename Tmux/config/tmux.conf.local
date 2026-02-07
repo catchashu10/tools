@@ -266,9 +266,9 @@ tmux_conf_theme_right_separator_sub='\uE0B3'  #   PowerlineSymbols.otf font, see
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
-#tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
+tmux_conf_theme_status_left=" ❐ #S | #{git_info} "
+#tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_percentage, #{battery_percentage},} , #{sys_stats} | #{username}#{root} | #{hostname} "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
@@ -517,10 +517,69 @@ set -g @resurrect-capture-pane-contents 'on'
 
 # ------------------------------------------------------------------------------
 
-# # /!\ do not remove the following line
+# /!\ do not remove the following line
 # EOF
 #
-# # /!\ do not "uncomment" the functions: the leading "# " characters are needed
+# /!\ do not "uncomment" the functions: the leading "# " characters are needed
+#
+# # usage: #{git_info}
+# # shows git branch with nerd font icon + fish-style status symbols
+# #   + = staged, ! = modified, ? = untracked, ⇡N = ahead, ⇣N = behind
+# git_info() {
+#   pane_path=$(tmux display-message -p '#{pane_current_path}')
+#   cd "$pane_path" 2>/dev/null || return
+#   branch=$(git symbolic-ref --short HEAD 2>/dev/null) \
+#     || branch=$(git describe --tags --exact-match HEAD 2>/dev/null) \
+#     || branch=$(git rev-parse --short HEAD 2>/dev/null) \
+#     || return
+#   flags=""
+#   git diff --cached --quiet 2>/dev/null || flags="${flags}+"
+#   git diff --quiet 2>/dev/null || flags="${flags}!"
+#   untracked=$(git ls-files --others --exclude-standard 2>/dev/null | head -1)
+#   [ -n "$untracked" ] && flags="${flags}?"
+#   ab=$(git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)
+#   if [ -n "$ab" ]; then
+#     ahead=$(printf '%s' "$ab" | cut -f1)
+#     behind=$(printf '%s' "$ab" | cut -f2)
+#     [ "$ahead" -gt 0 ] 2>/dev/null && flags="${flags}⇡${ahead}"
+#     [ "$behind" -gt 0 ] 2>/dev/null && flags="${flags}⇣${behind}"
+#   fi
+#   icon=$(printf '\356\202\240')
+#   if [ -n "$flags" ]; then
+#     printf '%s %s %s' "$icon" "$branch" "$flags"
+#   else
+#     printf '%s %s' "$icon" "$branch"
+#   fi
+# }
+#
+# # usage: #{sys_stats}
+# # shows CPU%, CPU temp (if available), and RAM usage
+# sys_stats() {
+#   read _ user nice system idle iowait irq softirq steal rest < /proc/stat
+#   total=$((user + nice + system + idle + iowait + irq + softirq + steal))
+#   cache="/tmp/.tmux_cpu_$(id -u)"
+#   if [ -f "$cache" ]; then
+#     read prev_total prev_idle < "$cache"
+#     diff_total=$((total - prev_total))
+#     diff_idle=$((idle - prev_idle))
+#     if [ "$diff_total" -gt 0 ]; then
+#       cpu=$((100 * (diff_total - diff_idle) / diff_total))
+#     else
+#       cpu=0
+#     fi
+#   else
+#     cpu=0
+#   fi
+#   printf '%s %s\n' "$total" "$idle" > "$cache"
+#   mem=$(free -m | awk '/^Mem:/ {printf "%.1fG", $3/1024}')
+#   if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
+#     temp_raw=$(cat /sys/class/thermal/thermal_zone0/temp)
+#     temp=$((temp_raw / 1000))
+#     printf 'CPU %d%% %d°C RAM %s' "$cpu" "$temp" "$mem"
+#   else
+#     printf 'CPU %d%% RAM %s' "$cpu" "$mem"
+#   fi
+# }
 #
 # # usage: #{weather}
 # weather() {                                         # see https://github.com/chubin/wttr.in#one-line-output
