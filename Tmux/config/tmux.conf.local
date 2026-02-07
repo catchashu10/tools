@@ -455,6 +455,9 @@ bind S if-shell "tmux show-environment -g NATURAL_SCROLL 2>/dev/null | grep -q o
    bind-key -T copy-mode-vi WheelDownPane select-pane \\; send-keys -X -N 5 scroll-up ; \
    display 'scroll: natural (trackpad)'"
 
+# click on right status bar to open htop
+bind -n MouseDown1StatusRight new-window -n htop htop
+
 # move status line to top
 #set -g status-position top
 
