@@ -57,7 +57,7 @@ step "Linking themes..."
 if [ -d "$HOME/.tmux/themes" ] && [ ! -L "$HOME/.tmux/themes" ]; then
     rm -rf "$HOME/.tmux/themes"
 fi
-ln -s -f "$SCRIPT_DIR/themes" "$HOME/.tmux/themes"
+ln -s -f -n "$SCRIPT_DIR/themes" "$HOME/.tmux/themes"
 echo "  ~/.tmux/themes → $SCRIPT_DIR/themes/"
 echo "  Themes: $(ls "$SCRIPT_DIR/themes/" | sed 's/.conf//g' | tr '\n' ' ')"
 
