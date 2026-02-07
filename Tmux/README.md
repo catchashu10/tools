@@ -106,9 +106,20 @@ Status bar shows: `scroll: natural (trackpad)` or `scroll: normal (mouse wheel)`
 |-------|-------------|
 | `default` | Original gpakosz — yellow, pink, green segments |
 | `catppuccin-mocha` | Soft pastels — mauve, pink, peach, blue |
+| `cyberpunk` | Neon electric — hot pink, purple, cyan, orange |
 | `dracula` | Bold — purple, pink, cyan, orange |
+| `everforest` | Soft woodland — green, orange, aqua, yellow |
+| `gruvbox` | Warm retro — orange, red, green, yellow |
+| `kanagawa` | Japanese ink — violet, sakura pink, orange, spring blue |
 | `nord` | Cool blues — frost blue, teal, aurora orange |
+| `rose-pine` | Elegant muted — iris purple, rose, gold, foam |
 | `tokyo-night` | Deep blue — blue, magenta, orange, cyan |
+| **Monochrome** | |
+| `mono-amber` | Warm glow — chocolate to gold gradients |
+| `mono-blue` | Ocean depths — navy to sky blue gradients |
+| `mono-green` | Terminal hacker — forest to mint gradients |
+| `mono-purple` | Royal velvet — plum to lavender gradients |
+| `mono-rose` | Soft blush — wine to pink gradients |
 
 ### Switching Themes
 
@@ -118,9 +129,19 @@ Status bar shows: `scroll: natural (trackpad)` or `scroll: normal (mouse wheel)`
 
 ```bash
 tmux-theme catppuccin-mocha
+tmux-theme cyberpunk
 tmux-theme dracula
+tmux-theme everforest
+tmux-theme gruvbox
+tmux-theme kanagawa
 tmux-theme nord
+tmux-theme rose-pine
 tmux-theme tokyo-night
+tmux-theme mono-amber
+tmux-theme mono-blue
+tmux-theme mono-green
+tmux-theme mono-purple
+tmux-theme mono-rose
 tmux-theme default
 ```
 

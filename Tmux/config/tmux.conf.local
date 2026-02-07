@@ -416,9 +416,21 @@ bind C-c command-prompt -p "new-session" "new-session -c '#{pane_current_path}' 
 # theme switcher (prefix + T to pick a theme)
 bind T display-menu -T "Select Theme" \
   "Catppuccin Mocha" m "run-shell -b '$HOME/.local/bin/tmux-theme catppuccin-mocha'" \
+  "Cyberpunk"        c "run-shell -b '$HOME/.local/bin/tmux-theme cyberpunk'" \
   "Dracula"          d "run-shell -b '$HOME/.local/bin/tmux-theme dracula'" \
+  "Everforest"       e "run-shell -b '$HOME/.local/bin/tmux-theme everforest'" \
+  "Gruvbox"          g "run-shell -b '$HOME/.local/bin/tmux-theme gruvbox'" \
+  "Kanagawa"         k "run-shell -b '$HOME/.local/bin/tmux-theme kanagawa'" \
   "Nord"             n "run-shell -b '$HOME/.local/bin/tmux-theme nord'" \
+  "Rose Pine"        r "run-shell -b '$HOME/.local/bin/tmux-theme rose-pine'" \
   "Tokyo Night"      t "run-shell -b '$HOME/.local/bin/tmux-theme tokyo-night'" \
+  "" \
+  "Mono Amber"       a "run-shell -b '$HOME/.local/bin/tmux-theme mono-amber'" \
+  "Mono Blue"        b "run-shell -b '$HOME/.local/bin/tmux-theme mono-blue'" \
+  "Mono Green"       h "run-shell -b '$HOME/.local/bin/tmux-theme mono-green'" \
+  "Mono Purple"      p "run-shell -b '$HOME/.local/bin/tmux-theme mono-purple'" \
+  "Mono Rose"        s "run-shell -b '$HOME/.local/bin/tmux-theme mono-rose'" \
+  "" \
   "Default"          o "run-shell -b '$HOME/.local/bin/tmux-theme default'"
 
 # display a message after toggling mouse support

@@ -13,7 +13,7 @@ Centralized tracking of all tool configurations, scripts, and settings. Each sub
 
 | Tool | Folder | Status | Description |
 |------|--------|--------|-------------|
-| [Tmux](Tmux/) | `~/Tools/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 5 themes, capture tools |
+| [Tmux](Tmux/) | `~/Tools/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 15 themes, capture tools |
 
 ## Structure
 
