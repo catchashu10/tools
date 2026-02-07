@@ -6,6 +6,8 @@
 
 THEMES_DIR="$HOME/.tmux/themes"
 CONF="$HOME/.tmux.conf.local"
+# Resolve symlink so mv writes back to the real file, not replaces the link
+[ -L "$CONF" ] && CONF="$(readlink "$CONF")"
 THEME_NAME="$1"
 
 if [ -z "$THEME_NAME" ]; then
