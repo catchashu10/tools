@@ -1,0 +1,3 @@
+# Force LF line endings for shell scripts (WSL needs this)
+*.sh text eol=lf
+Shell/scripts/* text eol=lf

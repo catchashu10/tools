@@ -150,7 +150,7 @@ if command -v fzf &>/dev/null; then
 
     # fzf appearance — subtle, matches tmux amber theme
     export FZF_DEFAULT_OPTS='
-        --height=40%
+        --height=100%
         --layout=reverse
         --border=rounded
         --info=inline

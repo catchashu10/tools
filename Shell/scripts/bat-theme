@@ -42,7 +42,6 @@ CURRENT="${BAT_THEME:-$(grep -oP '(?<=BAT_THEME=").*(?=")' "$ENV_FILE" 2>/dev/nu
 # -- pick theme ----------------------------------------------------------------
 
 THEME=$($BAT --list-themes --color=never \
-    | grep -oP '^Theme: \K.*' \
     | fzf \
         --header="Current: $CURRENT  |  Preview: $(basename "$PREVIEW_FILE")" \
         --preview="$BAT --color=always --theme={} --style=numbers '$PREVIEW_FILE'" \
