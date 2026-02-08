@@ -58,6 +58,7 @@ check_tool() {
 }
 
 check_tool "bat"     "batcat" "bat"
+check_tool "delta"   "delta"  "git-delta"
 check_tool "eza"     "eza"    "eza"
 check_tool "fd"      "fdfind" "fd-find"
 check_tool "ripgrep" "rg"     "ripgrep"
@@ -118,7 +119,23 @@ symlink_config "$SCRIPT_DIR/config/bashrc"        "$HOME/.bashrc"
 symlink_config "$SCRIPT_DIR/config/zshrc"          "$HOME/.zshrc"
 symlink_config "$SCRIPT_DIR/config/starship.toml"  "$HOME/.config/starship.toml"
 
-# -- 6. ensure ~/.local/bin in PATH ------------------------------------------
+# -- 6. git delta config -----------------------------------------------------
+
+step "Checking git delta config..."
+if grep -q 'delta.gitconfig' "$HOME/.gitconfig" 2>/dev/null; then
+    echo "  delta.gitconfig already included in ~/.gitconfig"
+else
+    if [ -f "$HOME/.gitconfig" ]; then
+        echo "" >> "$HOME/.gitconfig"
+    fi
+    cat >> "$HOME/.gitconfig" <<'GITEOF'
+[include]
+	path = ~/Tools/Shell/config/delta.gitconfig
+GITEOF
+    echo "  Added [include] for delta.gitconfig to ~/.gitconfig"
+fi
+
+# -- 7. ensure ~/.local/bin in PATH ------------------------------------------
 
 step "Checking PATH..."
 if echo "$PATH" | grep -q "$HOME/.local/bin"; then
@@ -136,6 +153,7 @@ echo "  DO NOT delete this folder ($SCRIPT_DIR)."
 echo ""
 echo "  Installed tools:"
 echo "    bat (batcat)  — syntax-highlighted cat"
+echo "    delta         — beautiful side-by-side git diffs"
 echo "    eza           — modern ls with icons"
 echo "    fd (fdfind)   — fast file finder"
 echo "    ripgrep (rg)  — fast grep"

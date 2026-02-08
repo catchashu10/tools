@@ -30,6 +30,7 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 | **Bash config** | **`~/.bashrc`** | Symlink → repo `config/bashrc` |
 | **Zsh config** | **`~/.zshrc`** | Symlink → repo `config/zshrc` |
 | **Starship config** | **`~/.config/starship.toml`** | Symlink → repo `config/starship.toml` |
+| **Delta config** | **`~/.gitconfig [include]`** | Included from repo `config/delta.gitconfig` |
 | Starship binary | `~/.local/bin/starship` | Cross-shell prompt |
 
 ## Repo Structure
@@ -41,7 +42,8 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 └── config/
     ├── bashrc                        # Bash configuration
     ├── zshrc                         # Zsh configuration
-    └── starship.toml                 # Starship prompt theme
+    ├── starship.toml                 # Starship prompt theme
+    └── delta.gitconfig               # Git delta config (included from ~/.gitconfig)
 ```
 
 After install, symlinks point FROM dotfile locations TO this repo:
@@ -51,6 +53,12 @@ After install, symlinks point FROM dotfile locations TO this repo:
 ~/.config/starship.toml  → ~/Tools/Shell/config/starship.toml
 ```
 
+Git delta config is **included** (not symlinked) via `~/.gitconfig`:
+```
+[include]
+    path = ~/Tools/Shell/config/delta.gitconfig
+```
+
 ## What's Included
 
 ### CLI Tools
@@ -58,6 +66,7 @@ After install, symlinks point FROM dotfile locations TO this repo:
 | Tool | Command | Replaces | Purpose |
 |------|---------|----------|---------|
 | [bat](https://github.com/sharkdp/bat) | `batcat` / `bat` | `cat` | Syntax highlighting, line numbers |
+| [delta](https://github.com/dandavid0/delta) | `delta` | `diff` | Side-by-side git diffs, syntax highlighting |
 | [eza](https://github.com/eza-community/eza) | `eza` | `ls` | Icons, git status, tree view |
 | [fd](https://github.com/sharkdp/fd) | `fdfind` / `fd` | `find` | Fast, respects .gitignore |
 | [ripgrep](https://github.com/BurntSushi/ripgrep) | `rg` | `grep` | Fast content search |
