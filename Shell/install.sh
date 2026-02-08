@@ -119,7 +119,35 @@ symlink_config "$SCRIPT_DIR/config/bashrc"        "$HOME/.bashrc"
 symlink_config "$SCRIPT_DIR/config/zshrc"          "$HOME/.zshrc"
 symlink_config "$SCRIPT_DIR/config/starship.toml"  "$HOME/.config/starship.toml"
 
-# -- 6. git delta config -----------------------------------------------------
+# -- 6. symlink scripts to ~/.local/bin --------------------------------------
+
+step "Linking scripts..."
+mkdir -p "$HOME/.local/bin"
+
+if [ -d "$SCRIPT_DIR/scripts" ]; then
+    for script in "$SCRIPT_DIR/scripts/"*; do
+        [ -f "$script" ] || continue
+        chmod +x "$script"
+        ln -s -f "$script" "$HOME/.local/bin/$(basename "$script")"
+        echo "  ~/.local/bin/$(basename "$script") → $script"
+    done
+else
+    echo "  No scripts directory found — skipping"
+fi
+
+# -- 7. bat theme env --------------------------------------------------------
+
+step "Checking bat theme..."
+BAT_ENV="$HOME/.config/bat/env"
+if [ -f "$BAT_ENV" ]; then
+    echo "  $BAT_ENV already exists"
+else
+    mkdir -p "$(dirname "$BAT_ENV")"
+    echo 'export BAT_THEME="base16"' > "$BAT_ENV"
+    echo "  Created $BAT_ENV (default: base16)"
+fi
+
+# -- 8. git delta config -----------------------------------------------------
 
 step "Checking git delta config..."
 if grep -q 'delta.gitconfig' "$HOME/.gitconfig" 2>/dev/null; then
@@ -135,7 +163,7 @@ GITEOF
     echo "  Added [include] for delta.gitconfig to ~/.gitconfig"
 fi
 
-# -- 7. ensure ~/.local/bin in PATH ------------------------------------------
+# -- 9. ensure ~/.local/bin in PATH ------------------------------------------
 
 step "Checking PATH..."
 if echo "$PATH" | grep -q "$HOME/.local/bin"; then

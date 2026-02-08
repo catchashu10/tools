@@ -9,7 +9,6 @@
 	navigate = true
 	side-by-side = true
 	line-numbers = true
-	syntax-theme = base16
 	minus-style = syntax "#37222c"
 	minus-emph-style = syntax "#713137"
 	plus-style = syntax "#20303b"

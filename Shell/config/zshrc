@@ -54,6 +54,10 @@ alias grep='grep --color=auto'
 alias diff='diff --color=auto'
 alias ip='ip -color=auto'
 
+# -- bat theme ----------------------------------------------------------------
+# Single source of truth for bat + delta syntax theme
+[[ -f "$HOME/.config/bat/env" ]] && source "$HOME/.config/bat/env"
+
 # -- modern tool aliases ------------------------------------------------------
 
 # bat

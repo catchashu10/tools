@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# bat-theme — interactive theme switcher for bat and delta
+#
+# Usage: bat-theme [file]
+#   file  optional file to use for preview (default: ~/.bashrc)
+#
+# Requires: bat/batcat, fzf
+# Themes are saved to ~/.config/bat/env (sourced by bashrc/zshrc)
+# Delta inherits the theme automatically via $BAT_THEME
+
+set -euo pipefail
+
+# -- resolve bat command -------------------------------------------------------
+
+if command -v batcat &>/dev/null; then
+    BAT=batcat
+elif command -v bat &>/dev/null; then
+    BAT=bat
+else
+    echo "Error: bat (batcat) is not installed" >&2
+    exit 1
+fi
+
+if ! command -v fzf &>/dev/null; then
+    echo "Error: fzf is not installed" >&2
+    exit 1
+fi
+
+# -- preview file --------------------------------------------------------------
+
+PREVIEW_FILE="${1:-$HOME/.bashrc}"
+if [[ ! -f "$PREVIEW_FILE" ]]; then
+    echo "Error: preview file '$PREVIEW_FILE' not found" >&2
+    exit 1
+fi
+
+# -- current theme -------------------------------------------------------------
+
+ENV_FILE="$HOME/.config/bat/env"
+CURRENT="${BAT_THEME:-$(grep -oP '(?<=BAT_THEME=").*(?=")' "$ENV_FILE" 2>/dev/null || echo "default")}"
+
+# -- pick theme ----------------------------------------------------------------
+
+THEME=$($BAT --list-themes --color=never \
+    | grep -oP '^Theme: \K.*' \
+    | fzf \
+        --header="Current: $CURRENT  |  Preview: $(basename "$PREVIEW_FILE")" \
+        --preview="$BAT --color=always --theme={} --style=numbers '$PREVIEW_FILE'" \
+        --preview-window="right:70%" \
+    || true)
+
+if [[ -z "$THEME" ]]; then
+    echo "No theme selected."
+    exit 0
+fi
+
+# -- save theme ----------------------------------------------------------------
+
+mkdir -p "$(dirname "$ENV_FILE")"
+echo "export BAT_THEME=\"$THEME\"" > "$ENV_FILE"
+
+echo "Theme set to: $THEME"
+echo "Saved to:     $ENV_FILE"
+echo ""
+echo "Run 'r' (or: source ~/.bashrc) to apply."

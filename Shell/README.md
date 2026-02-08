@@ -22,6 +22,7 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 | `e` | edit shell config |
 | `mkcd dir` | mkdir + cd in one step |
 | `extract file` | extract any archive format |
+| `bat-theme` | Interactive bat/delta theme switcher (fzf + live preview) |
 
 ## File Locations
 
@@ -31,6 +32,7 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 | **Zsh config** | **`~/.zshrc`** | Symlink → repo `config/zshrc` |
 | **Starship config** | **`~/.config/starship.toml`** | Symlink → repo `config/starship.toml` |
 | **Delta config** | **`~/.gitconfig [include]`** | Included from repo `config/delta.gitconfig` |
+| **Bat theme** | **`~/.config/bat/env`** | `BAT_THEME` — shared by bat + delta |
 | Starship binary | `~/.local/bin/starship` | Cross-shell prompt |
 
 ## Repo Structure
@@ -39,6 +41,8 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 ~/Tools/Shell/
 ├── README.md                         # This file
 ├── install.sh                        # Run this on a new machine
+├── scripts/
+│   └── bat-theme                     # Interactive bat/delta theme switcher
 └── config/
     ├── bashrc                        # Bash configuration
     ├── zshrc                         # Zsh configuration
