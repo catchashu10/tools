@@ -15,6 +15,7 @@ Centralized tracking of all tool configurations, scripts, and settings. Each sub
 |------|--------|--------|-------------|
 | [Shell](Shell/) | `~/Tools/Shell/` | Configured | Bash/Zsh configs, CLI tools (bat, eza, fd, rg, fzf, zoxide), Starship prompt |
 | [Tmux](Tmux/) | `~/Tools/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 15 themes, capture tools |
+| [Learn](Learn/) | `~/Tools/Learn/` | Maintained | In-depth learning guides for all tools |
 
 ## Structure
 
