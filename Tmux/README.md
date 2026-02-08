@@ -23,7 +23,7 @@ Terminal multiplexer with gpakosz/.tmux framework, custom themes, and capture to
 | Themes | `~/.tmux/themes/*.conf` | Theme colour definitions |
 | Theme switcher | `~/.local/bin/tmux-theme` | Theme switching script |
 | Tmux capture | `~/.local/bin/tmux-capture` | Capture pane contents for AI |
-| Unified capture | `~/.local/bin/capture` | Auto-detect Zellij/Tmux capture |
+| Unified capture | `~/.local/bin/capture` | Capture tmux sessions by name |
 | Capture output | `~/.tmux-context/` | Captured pane contents |
 
 ## Repo Structure
@@ -43,7 +43,7 @@ Terminal multiplexer with gpakosz/.tmux framework, custom themes, and capture to
 └── scripts/
     ├── tmux-theme                    # Theme switcher
     ├── tmux-capture                  # Capture pane contents
-    └── capture                       # Unified capture (Zellij/Tmux)
+    └── capture                       # Capture tmux sessions by name
 ```
 
 After install, symlinks point FROM dotfile locations TO this repo:

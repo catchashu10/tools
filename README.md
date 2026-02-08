@@ -13,6 +13,7 @@ Centralized tracking of all tool configurations, scripts, and settings. Each sub
 
 | Tool | Folder | Status | Description |
 |------|--------|--------|-------------|
+| [Shell](Shell/) | `~/Tools/Shell/` | Configured | Bash/Zsh configs, CLI tools (bat, eza, fd, rg, fzf, zoxide), Starship prompt |
 | [Tmux](Tmux/) | `~/Tools/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 15 themes, capture tools |
 
 ## Structure
@@ -31,6 +32,9 @@ Each tool folder follows this pattern:
 
 After running `install.sh`, symlinks point **from** dotfile locations **to** this repo:
 ```
+~/.bashrc               → ~/Tools/Shell/config/bashrc
+~/.zshrc                → ~/Tools/Shell/config/zshrc
+~/.config/starship.toml → ~/Tools/Shell/config/starship.toml
 ~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
 ~/.local/bin/tmux-theme → ~/Tools/Tmux/scripts/tmux-theme
 ```
@@ -38,4 +42,9 @@ Edit the files anywhere — the symlink ensures both paths reference the same fi
 
 ## Quick Setup on a New Machine
 
-Each tool's README has a "Replicating on a New Machine" section with copy-paste commands.
+```bash
+git clone http://tools.ashukumar.com ~/Tools
+~/Tools/install.sh
+```
+
+The top-level `install.sh` runs all tool installers in order. Each tool's README also has a standalone "Replicating on a New Machine" section.

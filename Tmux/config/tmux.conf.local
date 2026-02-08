@@ -81,24 +81,24 @@ tmux_conf_24b_colour=auto
 tmux_conf_theme=enabled
 
 # THEME_START
-# Tokyo Night — deep blue with blue/purple accents
-tmux_conf_theme_colour_1="#1a1b26"    # bg dark
-tmux_conf_theme_colour_2="#24283b"    # bg lighter
-tmux_conf_theme_colour_3="#565f89"    # comment (muted text)
-tmux_conf_theme_colour_4="#7aa2f7"    # blue (active/accent)
-tmux_conf_theme_colour_5="#e0af68"    # yellow (messages/modes)
-tmux_conf_theme_colour_6="#1a1b26"    # bg dark (left seg1 fg)
-tmux_conf_theme_colour_7="#c0caf5"    # fg (left seg2 fg)
-tmux_conf_theme_colour_8="#1a1b26"    # bg dark (left seg3 fg)
-tmux_conf_theme_colour_9="#7aa2f7"    # blue (left seg1 bg - session)
-tmux_conf_theme_colour_10="#bb9af7"   # magenta (left seg2 bg - uptime)
-tmux_conf_theme_colour_11="#9ece6a"   # green (left seg3 bg)
-tmux_conf_theme_colour_12="#565f89"   # comment (right seg1 fg - indicators)
-tmux_conf_theme_colour_13="#1a1b26"   # bg dark (right seg2 fg - date)
-tmux_conf_theme_colour_14="#1a1b26"   # bg dark (right seg3 fg - host)
-tmux_conf_theme_colour_15="#1a1b26"   # bg dark (right seg1 bg - indicators)
-tmux_conf_theme_colour_16="#ff9e64"   # orange (right seg2 bg - date)
-tmux_conf_theme_colour_17="#2ac3de"   # cyan (right seg3 bg - host)
+# Gruvbox — warm retro tones with earthy browns and vibrant accents
+tmux_conf_theme_colour_1="#282828"    # bg0 (dark background)
+tmux_conf_theme_colour_2="#3c3836"    # bg1 (lighter background)
+tmux_conf_theme_colour_3="#a89984"    # fg4 (muted text)
+tmux_conf_theme_colour_4="#d79921"    # yellow (active/accent)
+tmux_conf_theme_colour_5="#fabd2f"    # bright yellow (messages/modes)
+tmux_conf_theme_colour_6="#282828"    # bg0 (left seg1 fg)
+tmux_conf_theme_colour_7="#ebdbb2"    # fg1 (left seg2 fg)
+tmux_conf_theme_colour_8="#282828"    # bg0 (left seg3 fg)
+tmux_conf_theme_colour_9="#d65d0e"    # orange (left seg1 bg - session)
+tmux_conf_theme_colour_10="#cc241d"   # red (left seg2 bg - uptime)
+tmux_conf_theme_colour_11="#98971a"   # green (left seg3 bg)
+tmux_conf_theme_colour_12="#a89984"   # fg4 (right seg1 fg - indicators)
+tmux_conf_theme_colour_13="#282828"   # bg0 (right seg2 fg - date)
+tmux_conf_theme_colour_14="#282828"   # bg0 (right seg3 fg - host)
+tmux_conf_theme_colour_15="#282828"   # bg0 (right seg1 bg - indicators)
+tmux_conf_theme_colour_16="#d79921"   # yellow (right seg2 bg - date)
+tmux_conf_theme_colour_17="#458588"   # blue (right seg3 bg - host)
 # THEME_END
 
 # default theme (ansi)
@@ -266,7 +266,7 @@ tmux_conf_theme_right_separator_sub='\uE0B3'  #   PowerlineSymbols.otf font, see
 #     - #{uptime_s}
 #     - #{username}
 #     - #{username_ssh}
-tmux_conf_theme_status_left=" ❐ #S | #{git_info} "
+tmux_conf_theme_status_left=" ❐ #S "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
 tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_percentage, #{battery_percentage},} , #{sys_stats} | #{username}#{root} | #{hostname} "
 
@@ -525,35 +525,6 @@ set -g @resurrect-capture-pane-contents 'on'
 #
 # /!\ do not "uncomment" the functions: the leading "# " characters are needed
 #
-# # usage: #{git_info}
-# # shows git branch with nerd font icon + fish-style status symbols
-# #   + = staged, ! = modified, ? = untracked, ⇡N = ahead, ⇣N = behind
-# git_info() {
-#   pane_path=$(tmux display-message -p '#{pane_current_path}')
-#   cd "$pane_path" 2>/dev/null || return
-#   branch=$(git symbolic-ref --short HEAD 2>/dev/null) \
-#     || branch=$(git describe --tags --exact-match HEAD 2>/dev/null) \
-#     || branch=$(git rev-parse --short HEAD 2>/dev/null) \
-#     || return
-#   flags=""
-#   git diff --cached --quiet 2>/dev/null || flags="${flags}+"
-#   git diff --quiet 2>/dev/null || flags="${flags}!"
-#   untracked=$(git ls-files --others --exclude-standard 2>/dev/null | head -1)
-#   [ -n "$untracked" ] && flags="${flags}?"
-#   ab=$(git rev-list --left-right --count HEAD...@{upstream} 2>/dev/null)
-#   if [ -n "$ab" ]; then
-#     ahead=$(printf '%s' "$ab" | cut -f1)
-#     behind=$(printf '%s' "$ab" | cut -f2)
-#     [ "$ahead" -gt 0 ] 2>/dev/null && flags="${flags}⇡${ahead}"
-#     [ "$behind" -gt 0 ] 2>/dev/null && flags="${flags}⇣${behind}"
-#   fi
-#   icon=$(printf '\356\202\240')
-#   if [ -n "$flags" ]; then
-#     printf '%s %s %s' "$icon" "$branch" "$flags"
-#   else
-#     printf '%s %s' "$icon" "$branch"
-#   fi
-# }
 #
 # # usage: #{sys_stats}
 # # shows CPU%, CPU temp (if available), and RAM usage
