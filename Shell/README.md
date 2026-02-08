@@ -55,6 +55,7 @@ After install, symlinks point FROM dotfile locations TO this repo:
 ~/.bashrc                → ~/Tools/Shell/config/bashrc
 ~/.zshrc                 → ~/Tools/Shell/config/zshrc
 ~/.config/starship.toml  → ~/Tools/Shell/config/starship.toml
+~/.local/bin/bat-theme   → ~/Tools/Shell/scripts/bat-theme
 ```
 
 Git delta config is **included** (not symlinked) via `~/.gitconfig`:
@@ -86,7 +87,7 @@ Git delta config is **included** (not symlinked) via `~/.gitconfig`:
 | Completion | Case-insensitive, arrow-key menu (zsh) |
 | Terminal title | Auto-set to current command + directory |
 | Safety aliases | `rm -I`, `mv -i`, `cp -i` |
-| fzf + fd | File/directory search respects .gitignore, bat preview |
+| fzf + fd | Full-screen fuzzy finder, respects .gitignore, bat preview |
 | NVM | Node version manager (lazy-loaded from `~/.nvm`) |
 | PATH | `~/.local/bin` added automatically |
 
