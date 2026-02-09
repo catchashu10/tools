@@ -412,7 +412,7 @@ Extremely useful for running the same command on multiple servers.
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl-a e` | Edit config in vim |
+| `Ctrl-a e` | Edit config ($EDITOR) |
 | `Ctrl-a r` | Reload config |
 | `Ctrl-a S` | Toggle scroll direction (natural/normal) |
 | `Ctrl-a m` | Toggle mouse on/off |

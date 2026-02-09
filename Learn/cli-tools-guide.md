@@ -154,7 +154,7 @@ ls -D ~
 fd bashrc ~
 
 # Find by extension
-fd -e md ~/Learn
+fd -e md ~/Tools/Learn
 
 # Find only directories
 fd -t d projects ~
@@ -376,7 +376,7 @@ When the fzf prompt is open:
 ```bash
 # 1. Press Ctrl-R and type "git" — see all git commands you've run
 # 2. Press Ctrl-T and type "bashrc" — find and insert the file path
-# 3. Press Alt-C and type "learn" — cd into ~/Learn
+# 3. Press Alt-C and type "learn" — cd into ~/Tools/Learn
 # 4. Try: bat $(fzf)   — pick a file and view it
 ```
 
@@ -391,7 +391,7 @@ When the fzf prompt is open:
 
 ```bash
 # Jump to a directory by keyword (partial name works)
-z learn               # jumps to ~/Learn
+z learn               # jumps to ~/Tools/Learn
 z projects            # jumps to ~/Projects
 z capture             # jumps to ~/Projects/terminal-capture
 
@@ -631,10 +631,11 @@ ll              # eza shows detailed listing
 
 Your shell config is built to work inside tmux. Here's what to know:
 
-### Prompt Changes Inside Tmux
-- **Inside tmux**: Your prompt shows only `directory (branch) $`
-  because the tmux status bar already shows your hostname, session, time, etc.
-- **Outside tmux**: Full prompt with `user@host:directory (branch) $`
+### Prompt is the Same Everywhere (Locally)
+Starship shows the same prompt inside and outside tmux. Hostname and username
+only appear in **SSH sessions** (`ssh_only = true` in starship.toml), not based
+on whether you're in tmux. When you SSH to your Pi, you'll see
+`catchashu10@raspi` — otherwise it's just `directory (branch) ❯`.
 
 ### History Sharing Across Panes
 Your history is written after every command (`history -a`), so if you run
