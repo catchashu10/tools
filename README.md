@@ -31,14 +31,23 @@ Each tool folder follows this pattern:
 └── ...
 ```
 
+Shared installer utilities live in `setup/helpers.sh` (sourced by all install scripts).
+
 After running `install.sh`, symlinks point **from** dotfile locations **to** this repo:
 ```
 ~/.bashrc               → ~/Tools/Shell/config/bashrc
 ~/.zshrc                → ~/Tools/Shell/config/zshrc
 ~/.config/starship.toml → ~/Tools/Shell/config/starship.toml
+~/.config/bat/env        → ~/Tools/Shell/config/bat-env
 ~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
-~/.local/bin/tmux-theme → ~/Tools/Tmux/scripts/tmux-theme
+~/.local/bin/bat-theme   → ~/Tools/Shell/scripts/bat-theme
+~/.local/bin/tmux-theme  → ~/Tools/Tmux/scripts/tmux-theme
+~/.local/bin/capture     → ~/Tools/Tmux/scripts/capture
+~/.local/bin/tmux-capture→ ~/Tools/Tmux/scripts/tmux-capture
 ```
+
+**Not symlinked:** `~/.gitconfig` stays per-machine (different user.name/email per host) and uses `[include]` to pull in `~/Tools/Shell/config/delta.gitconfig`.
+
 Edit the files anywhere — the symlink ensures both paths reference the same file.
 
 ## Quick Setup on a New Machine

@@ -8,28 +8,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-step() { echo -e "${GREEN}[+]${NC} $1"; }
-warn() { echo -e "${YELLOW}[!]${NC} $1"; }
+source "$SCRIPT_DIR/../setup/helpers.sh"
 
 echo "=== Shell Setup Installer ==="
 echo ""
-
-# -- detect package manager --------------------------------------------------
-
-install_pkg() {
-    if command -v apt >/dev/null 2>&1; then
-        sudo apt install -y "$@"
-    elif command -v brew >/dev/null 2>&1; then
-        brew install "$@"
-    else
-        warn "No supported package manager (apt/brew). Install manually: $*"
-        return 1
-    fi
-}
 
 # -- 1. install zsh ----------------------------------------------------------
 
@@ -103,21 +85,12 @@ fi
 # -- 5. symlink configs ------------------------------------------------------
 
 step "Linking shell configs..."
-mkdir -p "$HOME/.config"
-
-symlink_config() {
-    local src="$1" dest="$2"
-    if [ -f "$dest" ] && [ ! -L "$dest" ]; then
-        warn "Backing up existing $(basename "$dest") → $(basename "$dest").bak"
-        cp "$dest" "${dest}.bak"
-    fi
-    ln -s -f "$src" "$dest"
-    echo "  $dest → $src"
-}
+mkdir -p "$HOME/.config" "$HOME/.config/bat"
 
 symlink_config "$SCRIPT_DIR/config/bashrc"        "$HOME/.bashrc"
 symlink_config "$SCRIPT_DIR/config/zshrc"          "$HOME/.zshrc"
 symlink_config "$SCRIPT_DIR/config/starship.toml"  "$HOME/.config/starship.toml"
+symlink_config "$SCRIPT_DIR/config/bat-env"        "$HOME/.config/bat/env"
 
 # -- 6. symlink scripts to ~/.local/bin --------------------------------------
 
@@ -135,19 +108,7 @@ else
     echo "  No scripts directory found — skipping"
 fi
 
-# -- 7. bat theme env --------------------------------------------------------
-
-step "Checking bat theme..."
-BAT_ENV="$HOME/.config/bat/env"
-if [ -f "$BAT_ENV" ]; then
-    echo "  $BAT_ENV already exists"
-else
-    mkdir -p "$(dirname "$BAT_ENV")"
-    echo 'export BAT_THEME="base16"' > "$BAT_ENV"
-    echo "  Created $BAT_ENV (default: base16)"
-fi
-
-# -- 8. git delta config -----------------------------------------------------
+# -- 7. git delta config -----------------------------------------------------
 
 step "Checking git delta config..."
 if grep -q 'delta.gitconfig' "$HOME/.gitconfig" 2>/dev/null; then
@@ -163,7 +124,7 @@ GITEOF
     echo "  Added [include] for delta.gitconfig to ~/.gitconfig"
 fi
 
-# -- 9. ensure ~/.local/bin in PATH ------------------------------------------
+# -- 8. ensure ~/.local/bin in PATH ------------------------------------------
 
 step "Checking PATH..."
 if echo "$PATH" | grep -q "$HOME/.local/bin"; then
