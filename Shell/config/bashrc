@@ -68,10 +68,12 @@ if command -v batcat &>/dev/null; then
     alias cat='batcat --paging=never'
     alias catp='batcat --plain --paging=never'   # plain output (for piping)
     export MANPAGER="sh -c 'col -bx | batcat -l man -p'"
+    export MANROFFOPT="-c"
 elif command -v bat &>/dev/null; then
     alias cat='bat --paging=never'
     alias catp='bat --plain --paging=never'
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+    export MANROFFOPT="-c"
 fi
 
 # eza → better ls (icons, git status, tree view)

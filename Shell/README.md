@@ -93,17 +93,19 @@ Git delta config is **included** (not symlinked) via `~/.gitconfig`:
 
 ### Starship Prompt
 
-Tokyo Night color scheme with modules:
+Uses **palette-based theming** — colors are defined as semantic names (`success`, `error`, `directory`, etc.) that resolve to hex values via `[palettes.<name>]` sections. The active palette is switched automatically by `tmux-theme` so the prompt always matches the tmux status bar.
 
-| Module | Shows | Color |
-|--------|-------|-------|
-| Directory | Truncated path | Blue `#7aa2f7` |
-| Git branch | Branch name with icon | Purple `#bb9af7` |
-| Git status | +staged !modified ?untracked | Yellow `#e0af68` |
-| Command duration | For commands >2s | Muted `#565f89` |
-| Node.js | Version (in Node projects) | Green `#9ece6a` |
-| Hostname | SSH sessions only | Cyan `#2ac3de` |
-| Character | `❯` (green = ok, red = error) | Green/Red |
+| Module | Shows | Palette color |
+|--------|-------|---------------|
+| Directory | Truncated path | `directory` |
+| Git branch | Branch name with icon | `git_branch` |
+| Git status | +staged !modified ?untracked | `git_status` |
+| Command duration | For commands >2s | `muted` |
+| Node.js | Version (in Node projects) | `success` |
+| Hostname | SSH sessions only | `accent` |
+| Character | `❯` (green = ok, red = error) | `success` / `error` |
+
+All 15 tmux themes have matching starship palettes. Switching themes via `prefix + T` or `tmux-theme <name>` updates both the tmux status bar and the prompt. Starship re-reads its config on every prompt render, so changes take effect on the next Enter keypress.
 
 ## Replicating on a New Machine
 

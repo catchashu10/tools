@@ -1,5 +1,7 @@
-# Starship prompt — Tokyo Night colors
+# Starship prompt — theme-synced via palettes
 # https://starship.rs/config/
+
+palette = "kanagawa"
 
 # Timeout for commands executed by starship (ms)
 command_timeout = 500
@@ -19,12 +21,12 @@ $character"""
 
 # -- character (prompt symbol) ------------------------------------------------
 [character]
-success_symbol = "[❯](bold #9ece6a)"    # green
-error_symbol = "[❯](bold #f7768e)"      # red
+success_symbol = "[❯](bold success)"
+error_symbol = "[❯](bold error)"
 
 # -- directory ----------------------------------------------------------------
 [directory]
-style = "bold #7aa2f7"                   # Tokyo Night blue
+style = "bold directory"
 truncation_length = 3
 truncate_to_repo = true
 
@@ -32,13 +34,13 @@ truncate_to_repo = true
 [git_branch]
 format = "on [$symbol$branch]($style) "
 symbol = " "                            # nerd font git icon
-style = "bold #bb9af7"                   # purple
+style = "bold git_branch"
 
 # -- git status ---------------------------------------------------------------
 # Symbols match the old git_info function: + staged, ! modified, ? untracked
 [git_status]
 format = '([\[$all_status$ahead_behind\]]($style) )'
-style = "#e0af68"                        # yellow
+style = "git_status"
 staged = "+$count"
 modified = "!$count"
 untracked = "?$count"
@@ -50,23 +52,162 @@ diverged = "⇡${ahead_count}⇣${behind_count}"
 [cmd_duration]
 min_time = 2_000                         # show for commands >2s
 format = "took [$duration]($style) "
-style = "#565f89"                        # muted
+style = "muted"
 
 # -- nodejs -------------------------------------------------------------------
 [nodejs]
 format = "via [$symbol($version)]($style) "
 symbol = " "                            # nerd font node icon
-style = "#9ece6a"                        # green
+style = "success"
 
 # -- hostname (SSH only) ------------------------------------------------------
 [hostname]
 ssh_only = true
 format = "[@$hostname]($style) in "
-style = "bold #2ac3de"                   # cyan
+style = "bold accent"
 
 # -- username (SSH only) ------------------------------------------------------
 [username]
 show_always = false                      # only in SSH
 format = "[$user]($style)"
-style_user = "bold #2ac3de"              # cyan
-style_root = "bold #f7768e"              # red
+style_user = "bold accent"
+style_root = "bold error"
+
+# =============================================================================
+# Palettes — one per tmux theme, switched by tmux-theme script
+# =============================================================================
+
+[palettes.tokyo-night]
+success   = "#9ece6a"
+error     = "#f7768e"
+directory = "#7aa2f7"
+git_branch = "#bb9af7"
+git_status = "#e0af68"
+muted     = "#565f89"
+accent    = "#2ac3de"
+
+[palettes.catppuccin-mocha]
+success   = "#a6e3a1"
+error     = "#f38ba8"
+directory = "#89b4fa"
+git_branch = "#cba6f7"
+git_status = "#f9e2af"
+muted     = "#6c7086"
+accent    = "#94e2d5"
+
+[palettes.dracula]
+success   = "#50fa7b"
+error     = "#ff5555"
+directory = "#8be9fd"
+git_branch = "#bd93f9"
+git_status = "#f1fa8c"
+muted     = "#6272a4"
+accent    = "#ff79c6"
+
+[palettes.nord]
+success   = "#a3be8c"
+error     = "#bf616a"
+directory = "#81a1c1"
+git_branch = "#b48ead"
+git_status = "#ebcb8b"
+muted     = "#4c566a"
+accent    = "#88c0d0"
+
+[palettes.gruvbox]
+success   = "#b8bb26"
+error     = "#fb4934"
+directory = "#83a598"
+git_branch = "#d3869b"
+git_status = "#fabd2f"
+muted     = "#928374"
+accent    = "#8ec07c"
+
+[palettes.rose-pine]
+success   = "#31748f"
+error     = "#eb6f92"
+directory = "#c4a7e7"
+git_branch = "#ebbcba"
+git_status = "#f6c177"
+muted     = "#6e6a86"
+accent    = "#9ccfd8"
+
+[palettes.everforest]
+success   = "#a7c080"
+error     = "#e67e80"
+directory = "#7fbbb3"
+git_branch = "#d699b6"
+git_status = "#dbbc7f"
+muted     = "#859289"
+accent    = "#83c092"
+
+[palettes.kanagawa]
+success   = "#76946a"
+error     = "#c34043"
+directory = "#7e9cd8"
+git_branch = "#957fb8"
+git_status = "#e6c384"
+muted     = "#727169"
+accent    = "#7fb4ca"
+
+[palettes.cyberpunk]
+success   = "#00e061"
+error     = "#ff2079"
+directory = "#00f0ff"
+git_branch = "#b030e0"
+git_status = "#ffff00"
+muted     = "#4a4a6a"
+accent    = "#ff6a00"
+
+[palettes.default]
+success   = "#5fff00"
+error     = "#d70000"
+directory = "#00afff"
+git_branch = "#ff00af"
+git_status = "#ffff00"
+muted     = "#8a8a8a"
+accent    = "#00afff"
+
+[palettes.mono-amber]
+success   = "#d4a040"
+error     = "#8a6018"
+directory = "#f0d080"
+git_branch = "#c49030"
+git_status = "#f0e0c0"
+muted     = "#8a7050"
+accent    = "#b08020"
+
+[palettes.mono-blue]
+success   = "#5b9bd5"
+error     = "#1a4a7a"
+directory = "#a0c4e8"
+git_branch = "#3d84c6"
+git_status = "#c8ddf0"
+muted     = "#4a6a8a"
+accent    = "#2e6db4"
+
+[palettes.mono-green]
+success   = "#5cb85c"
+error     = "#1a5a1a"
+directory = "#a0d8a0"
+git_branch = "#3da03d"
+git_status = "#c8f0c8"
+muted     = "#4a7a4a"
+accent    = "#2d8a2d"
+
+[palettes.mono-purple]
+success   = "#9b72cf"
+error     = "#4a2878"
+directory = "#c8a8e8"
+git_branch = "#8055b8"
+git_status = "#e0d0f0"
+muted     = "#7a5a9a"
+accent    = "#6a3d9a"
+
+[palettes.mono-rose]
+success   = "#d47a95"
+error     = "#7a2a48"
+directory = "#f0b0c0"
+git_branch = "#c05a78"
+git_status = "#f0d0d8"
+muted     = "#9a5a70"
+accent    = "#a84060"

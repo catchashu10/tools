@@ -61,6 +61,11 @@ fi
 
 mv "$CONF.tmp" "$CONF"
 
+# Update starship palette to match
+STARSHIP_CONF="$HOME/.config/starship.toml"
+[ -L "$STARSHIP_CONF" ] && STARSHIP_CONF="$(readlink "$STARSHIP_CONF")"
+sed -i "s/^palette = .*/palette = \"$THEME_NAME\"/" "$STARSHIP_CONF"
+
 # Reload tmux config (-q suppresses parsing warnings)
 tmux source-file -q "$HOME/.tmux.conf" 2>/dev/null
 

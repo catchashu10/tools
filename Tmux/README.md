@@ -127,6 +127,8 @@ Status bar shows: `scroll: natural (trackpad)` or `scroll: normal (mouse wheel)`
 
 **Command line:** `tmux-theme <name>`
 
+Both methods update the tmux status bar **and** the starship prompt palette simultaneously. Starship re-reads its config on every prompt render, so all panes pick up the new colors on the next Enter keypress.
+
 ```bash
 tmux-theme catppuccin-mocha
 tmux-theme cyberpunk
@@ -151,7 +153,7 @@ tmux-theme default
 2. Add an entry to the `bind T display-menu` section in `~/.tmux.conf.local`
 3. Reload: `Ctrl-a r`
 
-Theme files define 17 colour variables that control the entire status bar appearance. Colours are swapped between `# THEME_START` and `# THEME_END` markers in `~/.tmux.conf.local`.
+Theme files define 17 colour variables that control the entire status bar appearance. Colours are swapped between `# THEME_START` and `# THEME_END` markers in `~/.tmux.conf.local`. The script also updates the `palette = "..."` line in `starship.toml` so the prompt matches.
 
 ## Capture Tools
 
