@@ -49,12 +49,34 @@ check_tool "zoxide"  "zoxide" "zoxide"
 
 if [ ${#APT_PACKAGES[@]} -gt 0 ]; then
     step "Installing: ${APT_PACKAGES[*]}..."
+    FAILED_PACKAGES=()
     if command -v apt >/dev/null 2>&1; then
-        sudo apt update && sudo apt install -y "${APT_PACKAGES[@]}"
+        sudo apt update
+        for pkg in "${APT_PACKAGES[@]}"; do
+            if sudo apt install -y "$pkg" 2>/dev/null; then
+                echo "  $pkg installed"
+            else
+                FAILED_PACKAGES+=("$pkg")
+                warn "$pkg not available in apt repos — skipping"
+            fi
+        done
     elif command -v brew >/dev/null 2>&1; then
-        brew install "${APT_PACKAGES[@]}"
+        for pkg in "${APT_PACKAGES[@]}"; do
+            if brew install "$pkg" 2>/dev/null; then
+                echo "  $pkg installed"
+            else
+                FAILED_PACKAGES+=("$pkg")
+                warn "$pkg not available — skipping"
+            fi
+        done
     else
-        warn "Cannot install packages. Install manually: ${APT_PACKAGES[*]}"
+        FAILED_PACKAGES=("${APT_PACKAGES[@]}")
+        warn "No package manager found. Install manually: ${APT_PACKAGES[*]}"
+    fi
+    if [ ${#FAILED_PACKAGES[@]} -gt 0 ]; then
+        echo ""
+        warn "Some packages couldn't be installed: ${FAILED_PACKAGES[*]}"
+        echo "  Install them manually (e.g. via cargo or GitHub releases)"
     fi
 else
     echo "  All CLI tools already installed"
