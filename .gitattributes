@@ -1,3 +1,5 @@
-# Force LF line endings for shell scripts (WSL needs this)
+# Force LF line endings for all text files (WSL needs this)
+* text=auto eol=lf
 *.sh text eol=lf
 Shell/scripts/* text eol=lf
+Shell/config/* text eol=lf
