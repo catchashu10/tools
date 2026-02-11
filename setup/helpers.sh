@@ -30,3 +30,47 @@ install_pkg() {
         return 1
     fi
 }
+
+# Download a binary from GitHub releases and install to ~/.local/bin
+# Usage: install_github_binary "owner/repo" "binary_name"
+install_github_binary() {
+    local repo="$1" binary="$2"
+    local arch
+    arch="$(uname -m)"
+
+    local url
+    url=$(curl -sL "https://api.github.com/repos/$repo/releases/latest" \
+        | grep "browser_download_url" \
+        | grep -i "${arch}.*linux" \
+        | grep "\.tar\.gz" \
+        | grep -v "musl\|\.sha\|\.md5\|\.sig" \
+        | head -1 \
+        | cut -d'"' -f4)
+
+    if [ -z "$url" ]; then
+        warn "No matching release found for $repo ($arch)"
+        return 1
+    fi
+
+    local tmpdir
+    tmpdir=$(mktemp -d)
+    echo "  Downloading $binary from GitHub..."
+
+    if curl -sL "$url" -o "$tmpdir/archive.tar.gz"; then
+        tar xzf "$tmpdir/archive.tar.gz" -C "$tmpdir"
+        local bin
+        bin=$(find "$tmpdir" -name "$binary" -type f | head -1)
+        if [ -n "$bin" ]; then
+            chmod +x "$bin"
+            mkdir -p "$HOME/.local/bin"
+            mv "$bin" "$HOME/.local/bin/$binary"
+            echo "  $binary installed to ~/.local/bin/"
+            rm -rf "$tmpdir"
+            return 0
+        fi
+    fi
+
+    rm -rf "$tmpdir"
+    warn "Failed to install $binary from GitHub"
+    return 1
+}

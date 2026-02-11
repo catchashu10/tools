@@ -73,10 +73,21 @@ if [ ${#APT_PACKAGES[@]} -gt 0 ]; then
         FAILED_PACKAGES=("${APT_PACKAGES[@]}")
         warn "No package manager found. Install manually: ${APT_PACKAGES[*]}"
     fi
+    # Fallback: try GitHub releases for packages not in apt/brew
     if [ ${#FAILED_PACKAGES[@]} -gt 0 ]; then
-        echo ""
-        warn "Some packages couldn't be installed: ${FAILED_PACKAGES[*]}"
-        echo "  Install them manually (e.g. via cargo or GitHub releases)"
+        step "Trying GitHub releases for: ${FAILED_PACKAGES[*]}..."
+        STILL_FAILED=()
+        for pkg in "${FAILED_PACKAGES[@]}"; do
+            case "$pkg" in
+                eza)       install_github_binary "eza-community/eza" "eza" || STILL_FAILED+=("$pkg") ;;
+                git-delta) install_github_binary "dandavison/delta" "delta" || STILL_FAILED+=("$pkg") ;;
+                *)         STILL_FAILED+=("$pkg") ;;
+            esac
+        done
+        if [ ${#STILL_FAILED[@]} -gt 0 ]; then
+            echo ""
+            warn "Could not install: ${STILL_FAILED[*]}"
+        fi
     fi
 else
     echo "  All CLI tools already installed"
