@@ -26,7 +26,9 @@ HISTTIMEFORMAT="%F %T  "           # timestamp each entry
 HISTIGNORE="ls:ll:la:l:cd:pwd:exit:clear:c:history"  # skip trivial commands
 
 # Write history after every command (so other tmux panes see it)
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}history -a"
+# Guard: only add once (prevents accumulation on reload)
+[[ "${PROMPT_COMMAND}" != *"history -a"* ]] && \
+    PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}history -a"
 
 # -- prompt (starship) --------------------------------------------------------
 # Starship handles git info, directory, hostname (SSH), and more
@@ -234,4 +236,7 @@ export EDITOR=nano
 export VISUAL=nano
 
 # -- starship prompt -----------------------------------------------------------
+# Reset PS0 before init to prevent accumulation on reload
+# (starship appends to PS0, so re-sourcing would double it each time)
+PS0=
 eval "$(starship init bash)"
