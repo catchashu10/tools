@@ -21,8 +21,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/setup/helpers.sh"
-
-DEFAULT_TOOLS=(Shell Nvim Tmux)
+# shellcheck source=tools.conf
+source "$SCRIPT_DIR/tools.conf"
 TOOLS_TO_INSTALL=()
 HEALTH_TOOLS=()
 FORWARD_ARGS=()
@@ -42,7 +42,7 @@ $(common_options_help)
 
 Available tools:
 USAGE
-    for tool in "${DEFAULT_TOOLS[@]}"; do
+    for tool in "${TOOLS[@]}"; do
         echo "  $tool"
     done
     cat <<'USAGE'
@@ -147,7 +147,7 @@ TOOL_SUMMARY_FILE="$(mktemp)"
 trap 'rm -f "$TOOL_SUMMARY_FILE"' EXIT
 
 if [ "${#TOOLS_TO_INSTALL[@]}" -eq 0 ]; then
-    TOOLS_TO_INSTALL=("${DEFAULT_TOOLS[@]}")
+    TOOLS_TO_INSTALL=("${INSTALL_ORDER[@]}")
 else
     HEALTH_TOOLS=("${TOOLS_TO_INSTALL[@]}")
 fi

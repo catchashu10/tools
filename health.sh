@@ -24,8 +24,9 @@ set -u
 # shellcheck disable=SC2088
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-DEFAULT_TOOLS=(Repo Shell Nvim Tmux)
-AVAILABLE_CHECKS=(Repo Shell Nvim Tmux Backups ShellCheck)
+# shellcheck source=tools.conf
+source "$SCRIPT_DIR/tools.conf"
+AVAILABLE_CHECKS=("${HEALTH_CHECKS[@]}" "${EXTRA_HEALTH_CHECKS[@]}")
 
 PASS_COUNT=0
 WARN_COUNT=0
@@ -326,12 +327,13 @@ check_repo() {
     check_dir "Repo root" "$SCRIPT_DIR"
     check_dir "Shared setup folder" "$SCRIPT_DIR/setup"
     check_file "Shared helpers" "$SCRIPT_DIR/setup/helpers.sh"
+    check_file "Tool manifest" "$SCRIPT_DIR/tools.conf"
     check_executable "Top-level installer" "$SCRIPT_DIR/install.sh"
     check_executable "Top-level uninstaller" "$SCRIPT_DIR/uninstall.sh"
     check_executable "Top-level health check" "$SCRIPT_DIR/health.sh"
 
     local tool
-    for tool in Shell Nvim Tmux; do
+    for tool in "${TOOLS[@]}"; do
         check_dir "$tool tool folder" "$SCRIPT_DIR/$tool"
         check_executable "$tool installer" "$SCRIPT_DIR/$tool/install.sh"
         check_executable "$tool uninstaller" "$SCRIPT_DIR/$tool/uninstall.sh"
@@ -618,7 +620,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ "${#TOOLS_TO_CHECK[@]}" -eq 0 ]; then
-    TOOLS_TO_CHECK=("${DEFAULT_TOOLS[@]}")
+    TOOLS_TO_CHECK=("${HEALTH_CHECKS[@]}")
 fi
 
 setup_color

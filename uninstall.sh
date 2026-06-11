@@ -19,10 +19,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/setup/helpers.sh"
-
-# Reverse of install order is safest for a full uninstall: remove tools that
-# depend on Shell conventions before removing Shell's symlinks.
-DEFAULT_TOOLS=(Tmux Nvim Shell)
+# shellcheck source=tools.conf
+source "$SCRIPT_DIR/tools.conf"
 TOOLS_TO_UNINSTALL=()
 FORWARD_ARGS=()
 TOOL_SUMMARY_FILE=""
@@ -38,7 +36,7 @@ $(common_options_help)
 
 Available tools:
 USAGE
-    for tool in "${DEFAULT_TOOLS[@]}"; do
+    for tool in "${UNINSTALL_ORDER[@]}"; do
         echo "  $tool"
     done
     cat <<'USAGE'
@@ -121,7 +119,7 @@ TOOL_SUMMARY_FILE="$(mktemp)"
 trap 'rm -f "$TOOL_SUMMARY_FILE"' EXIT
 
 if [ "${#TOOLS_TO_UNINSTALL[@]}" -eq 0 ]; then
-    TOOLS_TO_UNINSTALL=("${DEFAULT_TOOLS[@]}")
+    TOOLS_TO_UNINSTALL=("${UNINSTALL_ORDER[@]}")
 fi
 
 banner "Tools Uninstall"

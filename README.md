@@ -58,7 +58,7 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ./health.sh --color=always # force colored output, useful when piped/logged
 ```
 
-Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
+Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Top-level tool order and health target metadata live in `tools.conf`. Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
 
 Install/uninstall safety model:
 
