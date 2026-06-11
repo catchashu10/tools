@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tmux setup installer
-# Usage: <repo>/Tmux/install.sh [--allow-all]
+# Usage: <repo>/Tmux/install.sh [--allow-all] [--dry-run]
 #
 # Creates symlinks from tmux locations to this repo.
 
@@ -38,7 +38,7 @@ setup_ui
 
 banner "Tmux Setup"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tmux folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 
 section "Dependencies"
 if command -v tmux >/dev/null 2>&1; then

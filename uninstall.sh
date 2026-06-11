@@ -8,13 +8,12 @@
 #   ./uninstall.sh                     # uninstall every tool in reverse order
 #   ./uninstall.sh Nvim                # uninstall only Nvim
 #   ./uninstall.sh Tmux Shell          # uninstall selected tools
-#   ./uninstall.sh --allow-all         # do not prompt before non-symlink changes
+#   ./uninstall.sh --allow-all         # skip prompts for all changes
 #   ./uninstall.sh --dry-run           # preview changes without modifying the system
 #
 # Safety:
-#   Removing owned symlinks is allowed by default. Non-symlink system changes,
-#   such as restoring backup files or editing ~/.gitconfig, prompt unless
-#   --allow-all is passed.
+#   Default mode removes owned symlinks automatically and asks before
+#   non-symlink changes such as restoring backup files or editing ~/.gitconfig.
 
 set -e
 
@@ -42,6 +41,17 @@ USAGE
     for tool in "${DEFAULT_TOOLS[@]}"; do
         echo "  $tool"
     done
+    cat <<'USAGE'
+
+Shell uninstall scope:
+  Shell
+  ├── shell rc templates       copied ~/.bashrc and ~/.zshrc are left in place
+  ├── CLI packages             packages are not removed
+  ├── Starship prompt          owned config symlink removed; binary is not removed
+  ├── NVM                      ~/.nvm is not removed
+  ├── bat/delta theme config   owned symlink/include removed when safe
+  └── helper scripts           owned bat-theme symlink removed
+USAGE
 }
 
 parse_args() {
@@ -117,7 +127,7 @@ fi
 banner "Tools Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Repo:')" "$SCRIPT_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tools:')" "${TOOLS_TO_UNINSTALL[*]}"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 printf '  %s %s\n' "$(paint "$CYAN" 'Color:')" "$COLOR_MODE"
 
 for tool in "${TOOLS_TO_UNINSTALL[@]}"; do

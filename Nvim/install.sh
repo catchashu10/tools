@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Nvim setup installer
 # Usage:
-#   ./install.sh [flavor] [--force-clean] [--allow-all]
+#   ./install.sh [flavor] [--force-clean] [--allow-all] [--dry-run]
 #
 # Creates ~/.config/nvim as a symlink to one Nvim flavor in this repo.
 
@@ -77,7 +77,7 @@ printf '  %s %s\n' "$(paint "$CYAN" 'Flavor:')" "$FLAVOR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Source:')" "$NVIM_FLAVOR_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Target:')" "$NVIM_CONFIG_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Runtime mode:')" "$([ "$FORCE_CLEAN" = "1" ] && echo 'force-clean' || echo 'backup')"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 
 if [ ! -d "$NVIM_FLAVOR_DIR" ]; then
     error "Nvim flavor not found: $NVIM_FLAVOR_DIR"

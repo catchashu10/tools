@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Tmux setup uninstaller
-# Removes Tmux-owned symlinks. Non-symlink restores prompt unless --allow-all.
+# Removes Tmux-owned symlinks. Owned symlinks are removed automatically; non-symlink restores ask first unless --allow-all is passed.
 
 set -e
 
@@ -87,7 +87,7 @@ remove_owned_symlink() {
 
 banner "Tmux Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tmux folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 
 section "Config symlinks"
 remove_owned_symlink "$HOME/.tmux.conf"

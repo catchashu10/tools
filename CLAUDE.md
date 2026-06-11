@@ -51,7 +51,7 @@ Exception: `~/.gitconfig` is NOT symlinked (per-machine user.name/email). It use
 ### Shared Helpers
 
 All `install.sh` and `uninstall.sh` scripts source `setup/helpers.sh` which provides:
-- shared UI helpers with section dividers, status icons, color controls, and final grouped summaries
+- shared UI helpers with section dividers, status icons, color controls, clear mode labels, and final grouped summaries
 - `confirm_change message` - prompts before non-symlink system changes unless `--allow-all` is active; in `--dry-run` mode it reports the planned change and returns without modifying state
 - `ensure_dir path reason` - creates directories only after confirmation when needed
 - `symlink_config src dest` - creates/updates symlinks; prompts before backing up/replacing non-symlink destinations
@@ -69,7 +69,7 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 - All text files use LF line endings (enforced via `.gitattributes` for WSL compatibility)
 - Scripts must be `#!/usr/bin/env bash` with `set -e`
 - Each tool folder follows the pattern: `README.md`, `install.sh`, `uninstall.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
-- Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic; they must propagate `--allow-all` and color options to child scripts
+- Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic; they must propagate `--dry-run`, `--allow-all`, and color options to child scripts
 - Install/uninstall scripts may perform symlink-only changes by default, but must prompt before non-symlink state changes such as package installs, downloads, file copies/backups, git clones/pulls, directory creation, backup restoration, or editing non-symlink config files. `--dry-run` must preview both symlink and non-symlink changes without modifying state.
 - Top-level `health.sh` is read-only and should report setup issues without modifying files, installing packages, or running sync/update commands
 - Scripts should resolve paths relative to their own location (`SCRIPT_DIR=...`) and must not hardcode the repo's top-level folder name

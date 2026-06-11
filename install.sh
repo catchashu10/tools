@@ -8,13 +8,13 @@
 #   ./install.sh                     # install every tool in default order
 #   ./install.sh Shell               # install only Shell
 #   ./install.sh Nvim Tmux           # install only Nvim and Tmux
-#   ./install.sh --allow-all         # do not prompt before non-symlink changes
+#   ./install.sh --allow-all         # skip prompts for all changes
 #   ./install.sh --dry-run           # preview changes without modifying the system
 #
 # Safety:
-#   Symlink-only changes are allowed by default. Non-symlink system changes such
-#   as package installs, file copies, backups, git clones/pulls, and config edits
-#   prompt unless --allow-all is passed.
+#   Default mode runs symlink-only changes automatically and asks before
+#   non-symlink changes such as package installs, file copies, backups,
+#   git clones/pulls, and config edits.
 
 set -e
 
@@ -40,6 +40,17 @@ USAGE
     for tool in "${DEFAULT_TOOLS[@]}"; do
         echo "  $tool"
     done
+    cat <<'USAGE'
+
+Shell install includes:
+  Shell
+  ├── shell rc templates       copied to ~/.bashrc and ~/.zshrc
+  ├── CLI packages             zsh, bat, delta, eza, fd, ripgrep, fzf, zoxide
+  ├── Starship prompt          ~/.config/starship.toml plus ~/.local/bin/starship
+  ├── NVM                      Node version manager under ~/.nvm
+  ├── bat/delta theme config   ~/.config/bat/env and delta.gitconfig include
+  └── helper scripts           bat-theme linked into ~/.local/bin
+USAGE
 }
 
 parse_args() {
@@ -115,7 +126,7 @@ fi
 banner "Tools Setup"
 printf '  %s %s\n' "$(paint "$CYAN" 'Repo:')" "$SCRIPT_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tools:')" "${TOOLS_TO_INSTALL[*]}"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 printf '  %s %s\n' "$(paint "$CYAN" 'Color:')" "$COLOR_MODE"
 
 for tool in "${TOOLS_TO_INSTALL[@]}"; do

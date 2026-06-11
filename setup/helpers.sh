@@ -171,15 +171,28 @@ confirm_change() {
     esac
 }
 
+mode_label() {
+    if [ "$DRY_RUN" = "1" ]; then
+        echo "dry-run preview, no changes"
+    elif [ "$ALLOW_ALL" = "1" ]; then
+        echo "allow-all, symlinks and non-symlink changes run without prompts"
+    else
+        echo "safe default, symlinks auto, non-symlink changes ask first"
+    fi
+}
+
 common_options_help() {
     cat <<'HELP'
-  --allow-all       Do not prompt before non-symlink system changes
+  --allow-all       Skip prompts: perform symlink and non-symlink changes
   --dry-run         Preview planned changes without modifying files or installing packages
   --color=auto      Color only when stdout is a terminal (default)
   --color=always    Force ANSI colors
   --color=never     Disable ANSI colors
   --no-color        Same as --color=never
   -h, --help        Show help
+
+Default safety mode:
+  Symlink-only changes run automatically; non-symlink changes ask first.
 HELP
 }
 

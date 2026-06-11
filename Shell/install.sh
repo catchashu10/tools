@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Shell setup installer
-# Usage: <repo>/Shell/install.sh [--allow-all]
+# Usage: <repo>/Shell/install.sh [--allow-all] [--dry-run]
 #
 # Installs CLI tools, copies machine-local shell rc templates, and symlinks
 # tool-owned shell configs/scripts into place.
@@ -176,7 +176,7 @@ PY
 
 banner "Shell Setup"
 printf '  %s %s\n' "$(paint "$CYAN" 'Shell folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 
 section "Dependencies"
 if command -v zsh >/dev/null 2>&1; then

@@ -2,7 +2,7 @@
 # Shell setup uninstaller
 #
 # Removes Shell-owned symlinks and optionally edits non-symlink files only after
-# confirmation unless --allow-all is passed.
+# confirmation unless --allow-all is passed. Owned symlink removals run automatically.
 
 set -e
 
@@ -157,7 +157,7 @@ PY
 
 banner "Shell Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Shell folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$(mode_label)"
 
 section "Machine-local shell rc files"
 note_local_copy "$HOME/.bashrc"
