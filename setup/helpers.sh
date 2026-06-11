@@ -7,6 +7,7 @@
 ALLOW_ALL="${ALLOW_ALL:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 COLOR_MODE="${COLOR_MODE:-auto}"
+SUMMARY_DEFER_FILE="${SUMMARY_DEFER_FILE:-}"
 USE_COLOR=0
 
 BOLD=""
@@ -19,6 +20,49 @@ CYAN=""
 BLUE=""
 MAGENTA=""
 GRAY=""
+
+SUMMARY_OK=0
+SUMMARY_WARN=0
+SUMMARY_ERROR=0
+SUMMARY_SKIP=0
+SUMMARY_DRY=0
+SUMMARY_INFO=0
+SUMMARY_OK_ITEMS=()
+SUMMARY_WARN_ITEMS=()
+SUMMARY_ERROR_ITEMS=()
+SUMMARY_SKIP_ITEMS=()
+SUMMARY_DRY_ITEMS=()
+SUMMARY_INFO_ITEMS=()
+
+record_summary() {
+    local label="$1" message="$2"
+    case "$label" in
+        OK)
+            SUMMARY_OK=$((SUMMARY_OK + 1))
+            SUMMARY_OK_ITEMS+=("$message")
+            ;;
+        WARN)
+            SUMMARY_WARN=$((SUMMARY_WARN + 1))
+            SUMMARY_WARN_ITEMS+=("$message")
+            ;;
+        ERROR)
+            SUMMARY_ERROR=$((SUMMARY_ERROR + 1))
+            SUMMARY_ERROR_ITEMS+=("$message")
+            ;;
+        SKIP)
+            SUMMARY_SKIP=$((SUMMARY_SKIP + 1))
+            SUMMARY_SKIP_ITEMS+=("$message")
+            ;;
+        DRY)
+            SUMMARY_DRY=$((SUMMARY_DRY + 1))
+            SUMMARY_DRY_ITEMS+=("$message")
+            ;;
+        INFO)
+            SUMMARY_INFO=$((SUMMARY_INFO + 1))
+            SUMMARY_INFO_ITEMS+=("$message")
+            ;;
+    esac
+}
 
 setup_ui() {
     case "$COLOR_MODE" in
@@ -82,6 +126,7 @@ section() {
 status_line() {
     local color="$1" icon="$2" label="$3" message="$4"
     printf '  %s %-5s %s\n' "$(paint "$color" "$icon")" "$(paint "$color$BOLD" "$label")" "$message"
+    record_summary "$label" "$message"
 }
 
 ok() { status_line "$GREEN" "✓" "OK" "$1"; }
@@ -220,6 +265,47 @@ symlink_config() {
     ok "Linked: $dest -> $src"
 }
 
+
+print_summary_items() {
+    local title="$1"
+    shift
+    [ "$#" -gt 0 ] || return 0
+    printf '  %s
+' "$(paint "$BOLD" "$title")"
+    local item
+    for item in "$@"; do
+        printf '    - %s
+' "$item"
+    done
+}
+
+_print_action_summary() {
+    local title="${1:-Run summary}"
+    echo ""
+    rule
+    printf '%s
+' "$(paint "$BOLD$MAGENTA" "$title")"
+    rule
+    printf '  %s %s  %s %s  %s %s  %s %s  %s %s  %s %s
+'         "$(paint "$GREEN$BOLD" 'OK')" "$SUMMARY_OK"         "$(paint "$YELLOW$BOLD" 'WARN')" "$SUMMARY_WARN"         "$(paint "$RED$BOLD" 'ERROR')" "$SUMMARY_ERROR"         "$(paint "$GRAY$BOLD" 'SKIP')" "$SUMMARY_SKIP"         "$(paint "$MAGENTA$BOLD" 'DRY')" "$SUMMARY_DRY"         "$(paint "$CYAN$BOLD" 'INFO')" "$SUMMARY_INFO"
+
+    if [ "$SUMMARY_ERROR" -gt 0 ] || [ "$SUMMARY_WARN" -gt 0 ] || [ "$SUMMARY_SKIP" -gt 0 ] || [ "$SUMMARY_DRY" -gt 0 ]; then
+        echo ""
+        print_summary_items "Errors" "${SUMMARY_ERROR_ITEMS[@]}"
+        print_summary_items "Warnings" "${SUMMARY_WARN_ITEMS[@]}"
+        print_summary_items "Skipped" "${SUMMARY_SKIP_ITEMS[@]}"
+        print_summary_items "Dry-run plan" "${SUMMARY_DRY_ITEMS[@]}"
+    fi
+}
+
+print_action_summary() {
+    local title="${1:-Run summary}"
+    if [ -n "$SUMMARY_DEFER_FILE" ]; then
+        _print_action_summary "$title" >> "$SUMMARY_DEFER_FILE"
+    else
+        _print_action_summary "$title"
+    fi
+}
 install_pkg() {
     if [ "$#" -eq 0 ]; then
         return 0

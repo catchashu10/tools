@@ -132,4 +132,5 @@ else
 fi
 info "Start Neovim with: nvim"
 info "Then run inside Neovim: :LazyHealth"
+print_action_summary "Nvim install summary"
 rule

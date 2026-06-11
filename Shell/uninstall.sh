@@ -191,4 +191,5 @@ info "Symlinks/config entries removed: $REMOVED"
 info "Backups restored: $RESTORED"
 info "Skipped: $SKIPPED"
 info "Not removed: copied ~/.bashrc and ~/.zshrc, CLI packages, NVM, Starship, or this repo"
+print_action_summary "Shell uninstall summary"
 rule

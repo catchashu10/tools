@@ -63,6 +63,7 @@ Install/uninstall safety model:
 - Pass `--dry-run` to preview planned install/uninstall actions without changing files, installing packages, downloading tools, editing configs, or removing symlinks.
 - Pass `--allow-all` when you intentionally want the installer/uninstaller to perform those non-symlink changes without stopping for confirmation.
 - `--color=always`, `--color=never`, and `--no-color` are available on install, uninstall, and health scripts.
+- Install and uninstall runs end with grouped summaries showing `OK`, `WARN`, `ERROR`, `SKIP`, `DRY`, and `INFO` counts, plus details for warnings, skipped actions, errors, and dry-run plans.
 
 After running `install.sh`, machine-local shell rc files are copied from repo templates, while tool-owned configs/scripts are symlinked back to this repo:
 ```

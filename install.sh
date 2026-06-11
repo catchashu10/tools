@@ -24,6 +24,7 @@ source "$SCRIPT_DIR/setup/helpers.sh"
 DEFAULT_TOOLS=(Shell Nvim Tmux)
 TOOLS_TO_INSTALL=()
 FORWARD_ARGS=()
+TOOL_SUMMARY_FILE=""
 
 usage() {
     cat <<USAGE
@@ -99,11 +100,13 @@ run_tool_installer() {
     fi
 
     section "$tool install"
-    "$installer" "${FORWARD_ARGS[@]}"
+    SUMMARY_DEFER_FILE="$TOOL_SUMMARY_FILE" "$installer" "${FORWARD_ARGS[@]}"
 }
 
 parse_args "$@"
 setup_ui
+TOOL_SUMMARY_FILE="$(mktemp)"
+trap 'rm -f "$TOOL_SUMMARY_FILE"' EXIT
 
 if [ "${#TOOLS_TO_INSTALL[@]}" -eq 0 ]; then
     TOOLS_TO_INSTALL=("${DEFAULT_TOOLS[@]}")
@@ -119,12 +122,15 @@ for tool in "${TOOLS_TO_INSTALL[@]}"; do
     run_tool_installer "$tool"
 done
 
-echo ""
-rule
 if [ "$DRY_RUN" = "1" ]; then
     dry "Preview complete, no changes were made"
 else
     ok "Requested tools installed"
 fi
 info "Restart your shell to pick up changes"
+print_action_summary "Tools setup orchestration summary"
+if [ -s "$TOOL_SUMMARY_FILE" ]; then
+    section "Tool summaries"
+    cat "$TOOL_SUMMARY_FILE"
+fi
 rule

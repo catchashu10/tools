@@ -26,6 +26,7 @@ source "$SCRIPT_DIR/setup/helpers.sh"
 DEFAULT_TOOLS=(Tmux Nvim Shell)
 TOOLS_TO_UNINSTALL=()
 FORWARD_ARGS=()
+TOOL_SUMMARY_FILE=""
 
 usage() {
     cat <<USAGE
@@ -101,11 +102,13 @@ run_tool_uninstaller() {
     fi
 
     section "$tool uninstall"
-    "$uninstaller" "${FORWARD_ARGS[@]}"
+    SUMMARY_DEFER_FILE="$TOOL_SUMMARY_FILE" "$uninstaller" "${FORWARD_ARGS[@]}"
 }
 
 parse_args "$@"
 setup_ui
+TOOL_SUMMARY_FILE="$(mktemp)"
+trap 'rm -f "$TOOL_SUMMARY_FILE"' EXIT
 
 if [ "${#TOOLS_TO_UNINSTALL[@]}" -eq 0 ]; then
     TOOLS_TO_UNINSTALL=("${DEFAULT_TOOLS[@]}")
@@ -121,12 +124,15 @@ for tool in "${TOOLS_TO_UNINSTALL[@]}"; do
     run_tool_uninstaller "$tool"
 done
 
-echo ""
-rule
 if [ "$DRY_RUN" = "1" ]; then
     dry "Preview complete, no changes were made"
 else
     ok "Requested tools uninstalled"
 fi
 info "Repo remains intact: $SCRIPT_DIR"
+print_action_summary "Tools uninstall orchestration summary"
+if [ -s "$TOOL_SUMMARY_FILE" ]; then
+    section "Tool summaries"
+    cat "$TOOL_SUMMARY_FILE"
+fi
 rule

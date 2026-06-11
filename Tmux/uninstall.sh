@@ -117,4 +117,5 @@ info "Symlinks removed: $REMOVED"
 info "Backups restored: $RESTORED"
 info "Skipped: $SKIPPED"
 info "Not removed: tmux package, ~/.tmux, ~/.tmux-context, or this repo"
+print_action_summary "Tmux uninstall summary"
 rule

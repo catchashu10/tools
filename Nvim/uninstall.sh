@@ -63,10 +63,10 @@ case "$current_target" in
         ;;
 esac
 
-rule
 if [ "$DRY_RUN" = "1" ]; then
     dry "Nvim uninstall preview complete, no changes were made by this tool"
 else
     ok "Nvim uninstall complete"
 fi
+print_action_summary "Nvim uninstall summary"
 rule

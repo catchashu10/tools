@@ -146,4 +146,5 @@ fi
 info "Start tmux: tmux new -s main"
 info "Install plugins: Ctrl-a I"
 info "Prefix: Ctrl-a primary, Ctrl-Space secondary"
+print_action_summary "Tmux install summary"
 rule

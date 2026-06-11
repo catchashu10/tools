@@ -263,7 +263,6 @@ case ":$PATH:" in
 esac
 
 echo ""
-rule
 if [ "$DRY_RUN" = "1" ]; then
     dry "Shell install preview complete, no changes were made by this tool"
 else
@@ -271,4 +270,5 @@ else
 fi
 info "Shell rc files are local copies; tool-owned configs/scripts are symlinked"
 info "Do not delete this folder while symlinked configs remain: $SCRIPT_DIR"
+print_action_summary "Shell install summary"
 rule
