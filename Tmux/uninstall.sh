@@ -26,6 +26,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
         --allow-all) ALLOW_ALL=1 ;;
+        --dry-run) DRY_RUN=1 ;;
         --color=auto) COLOR_MODE="auto" ;;
         --color=always) COLOR_MODE="always" ;;
         --color=never|--no-color) COLOR_MODE="never" ;;
@@ -68,9 +69,13 @@ remove_owned_symlink() {
 
     case "$target" in
         "$SCRIPT_DIR"/*|"$HOME/.tmux/.tmux.conf")
-            rm "$dest"
-            ok "Removed symlink: $dest"
-            REMOVED=$((REMOVED + 1))
+            if [ "$DRY_RUN" = "1" ]; then
+                dry "Would remove symlink: $dest"
+            else
+                rm "$dest"
+                ok "Removed symlink: $dest"
+                REMOVED=$((REMOVED + 1))
+            fi
             restore_backup_if_allowed "$dest"
             ;;
         *)
@@ -82,7 +87,7 @@ remove_owned_symlink() {
 
 banner "Tmux Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tmux folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
 
 section "Config symlinks"
 remove_owned_symlink "$HOME/.tmux.conf"
@@ -103,7 +108,11 @@ fi
 
 echo ""
 rule
-ok "Tmux uninstall complete"
+if [ "$DRY_RUN" = "1" ]; then
+    dry "Tmux uninstall preview complete, no changes were made by this tool"
+else
+    ok "Tmux uninstall complete"
+fi
 info "Symlinks removed: $REMOVED"
 info "Backups restored: $RESTORED"
 info "Skipped: $SKIPPED"

@@ -28,6 +28,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
         --allow-all) ALLOW_ALL=1 ;;
+        --dry-run) DRY_RUN=1 ;;
         --color=auto) COLOR_MODE="auto" ;;
         --color=always) COLOR_MODE="always" ;;
         --color=never|--no-color) COLOR_MODE="never" ;;
@@ -48,6 +49,10 @@ restore_backup_if_allowed() {
     fi
 
     if confirm_change "Restore backup $backup to $dest"; then
+        if [ "$DRY_RUN" = "1" ]; then
+            dry "Would restore backup $backup to $dest"
+            return 0
+        fi
         mv "$backup" "$dest"
         ok "Restored $dest from $backup"
         RESTORED=$((RESTORED + 1))
@@ -70,9 +75,13 @@ remove_owned_symlink() {
 
     case "$target" in
         "$SCRIPT_DIR"/*)
-            rm "$dest"
-            ok "Removed symlink: $dest"
-            REMOVED=$((REMOVED + 1))
+            if [ "$DRY_RUN" = "1" ]; then
+                dry "Would remove symlink: $dest"
+            else
+                rm "$dest"
+                ok "Removed symlink: $dest"
+                REMOVED=$((REMOVED + 1))
+            fi
             restore_backup_if_allowed "$dest"
             ;;
         *)
@@ -148,7 +157,7 @@ PY
 
 banner "Shell Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Shell folder:')" "$SCRIPT_DIR"
-printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
 
 section "Machine-local shell rc files"
 note_local_copy "$HOME/.bashrc"
@@ -173,7 +182,11 @@ remove_delta_include
 
 echo ""
 rule
-ok "Shell uninstall complete"
+if [ "$DRY_RUN" = "1" ]; then
+    dry "Shell uninstall preview complete, no changes were made by this tool"
+else
+    ok "Shell uninstall complete"
+fi
 info "Symlinks/config entries removed: $REMOVED"
 info "Backups restored: $RESTORED"
 info "Skipped: $SKIPPED"

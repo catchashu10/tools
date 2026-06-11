@@ -30,6 +30,7 @@ while [ "$#" -gt 0 ]; do
         -h|--help) usage; exit 0 ;;
         --force-clean) FORCE_CLEAN=1 ;;
         --allow-all) ALLOW_ALL=1 ;;
+        --dry-run) DRY_RUN=1 ;;
         --color=auto) COLOR_MODE="auto" ;;
         --color=always) COLOR_MODE="always" ;;
         --color=never|--no-color) COLOR_MODE="never" ;;
@@ -76,7 +77,7 @@ printf '  %s %s\n' "$(paint "$CYAN" 'Flavor:')" "$FLAVOR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Source:')" "$NVIM_FLAVOR_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Target:')" "$NVIM_CONFIG_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Runtime mode:')" "$([ "$FORCE_CLEAN" = "1" ] && echo 'force-clean' || echo 'backup')"
-printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
 
 if [ ! -d "$NVIM_FLAVOR_DIR" ]; then
     error "Nvim flavor not found: $NVIM_FLAVOR_DIR"
@@ -124,7 +125,11 @@ fi
 
 echo ""
 rule
-ok "Nvim installation complete"
+if [ "$DRY_RUN" = "1" ]; then
+    dry "Nvim install preview complete, no changes were made by this tool"
+else
+    ok "Nvim installation complete"
+fi
 info "Start Neovim with: nvim"
 info "Then run inside Neovim: :LazyHealth"
 rule

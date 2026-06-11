@@ -24,6 +24,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
         --allow-all) ALLOW_ALL=1 ;;
+        --dry-run) DRY_RUN=1 ;;
         --color=auto) COLOR_MODE="auto" ;;
         --color=always) COLOR_MODE="always" ;;
         --color=never|--no-color) COLOR_MODE="never" ;;
@@ -48,8 +49,12 @@ fi
 current_target="$(readlink "$NVIM_CONFIG_DIR")"
 case "$current_target" in
     "$SCRIPT_DIR"/*)
-        rm "$NVIM_CONFIG_DIR"
-        ok "Removed symlink: $NVIM_CONFIG_DIR"
+        if [ "$DRY_RUN" = "1" ]; then
+            dry "Would remove symlink: $NVIM_CONFIG_DIR"
+        else
+            rm "$NVIM_CONFIG_DIR"
+            ok "Removed symlink: $NVIM_CONFIG_DIR"
+        fi
         info "Nvim configs remain intact under: $SCRIPT_DIR"
         ;;
     *)
@@ -59,5 +64,9 @@ case "$current_target" in
 esac
 
 rule
-ok "Nvim uninstall complete"
+if [ "$DRY_RUN" = "1" ]; then
+    dry "Nvim uninstall preview complete, no changes were made by this tool"
+else
+    ok "Nvim uninstall complete"
+fi
 rule

@@ -5,6 +5,7 @@
 
 # Common runtime flags. Scripts may override these after sourcing.
 ALLOW_ALL="${ALLOW_ALL:-0}"
+DRY_RUN="${DRY_RUN:-0}"
 COLOR_MODE="${COLOR_MODE:-auto}"
 USE_COLOR=0
 
@@ -89,9 +90,15 @@ info() { status_line "$CYAN" "i" "INFO" "$1"; }
 warn() { status_line "$YELLOW" "!" "WARN" "$1"; }
 error() { status_line "$RED" "✗" "ERROR" "$1"; }
 skip() { status_line "$GRAY" "-" "SKIP" "$1"; }
+dry() { status_line "$MAGENTA" "◦" "DRY" "$1"; }
 
 confirm_change() {
     local message="$1"
+
+    if [ "$DRY_RUN" = "1" ]; then
+        dry "Would: $message"
+        return 1
+    fi
 
     if [ "$ALLOW_ALL" = "1" ]; then
         ok "Allowed: $message"
@@ -122,6 +129,7 @@ confirm_change() {
 common_options_help() {
     cat <<'HELP'
   --allow-all       Do not prompt before non-symlink system changes
+  --dry-run         Preview planned changes without modifying files or installing packages
   --color=auto      Color only when stdout is a terminal (default)
   --color=always    Force ANSI colors
   --color=never     Disable ANSI colors
@@ -146,6 +154,11 @@ ensure_dir() {
 
     if [ -d "$dir" ]; then
         return 0
+    fi
+
+    if [ "$DRY_RUN" = "1" ]; then
+        dry "Would create directory: $dir"
+        return 1
     fi
 
     if confirm_change "$reason: $dir"; then
@@ -174,6 +187,10 @@ symlink_config() {
             ok "Already linked: $dest -> $src"
             return 0
         fi
+        if [ "$DRY_RUN" = "1" ]; then
+            dry "Would update symlink: $dest -> $src"
+            return 0
+        fi
         ln -s -f "$src" "$dest"
         ok "Updated symlink: $dest -> $src"
         return 0
@@ -191,6 +208,11 @@ symlink_config() {
         else
             skip "Left existing $dest unchanged"
         fi
+        return 0
+    fi
+
+    if [ "$DRY_RUN" = "1" ]; then
+        dry "Would create symlink: $dest -> $src"
         return 0
     fi
 
@@ -253,7 +275,7 @@ install_github_binary() {
         bin=$(find "$tmpdir" -name "$binary" -type f | head -1)
         if [ -n "$bin" ]; then
             chmod +x "$bin"
-            mkdir -p "$HOME/.local/bin"
+            ensure_dir "$HOME/.local/bin" "Create local bin directory" || return 1
             mv "$bin" "$HOME/.local/bin/$binary"
             ok "$binary installed to ~/.local/bin/"
             rm -rf "$tmpdir"

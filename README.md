@@ -38,11 +38,13 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 
 ```bash
 ./install.sh              # install Shell, Nvim, Tmux; prompts before non-symlink changes
+./install.sh --dry-run    # preview install actions without changing the system
 ./install.sh Nvim         # install only Nvim
 ./install.sh Shell Tmux   # install only Shell and Tmux
 ./install.sh --allow-all  # install without confirmation prompts
 
 ./uninstall.sh            # uninstall Tmux, Nvim, Shell; prompts before non-symlink changes
+./uninstall.sh --dry-run  # preview uninstall actions without changing the system
 ./uninstall.sh Nvim       # uninstall only Nvim
 ./uninstall.sh --allow-all # uninstall without confirmation prompts
 
@@ -58,6 +60,7 @@ Install/uninstall safety model:
 
 - Symlink-only changes, such as linking a repo config into `~/.config`, are allowed by default.
 - Non-symlink system changes prompt by default. Examples: package installs, `apt update`, GitHub downloads, copying `~/.bashrc`/`~/.zshrc`, backing up existing files, editing `~/.gitconfig`, cloning/updating `~/.tmux`, creating runtime directories, or restoring backup files.
+- Pass `--dry-run` to preview planned install/uninstall actions without changing files, installing packages, downloading tools, editing configs, or removing symlinks.
 - Pass `--allow-all` when you intentionally want the installer/uninstaller to perform those non-symlink changes without stopping for confirmation.
 - `--color=always`, `--color=never`, and `--no-color` are available on install, uninstall, and health scripts.
 

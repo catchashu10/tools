@@ -9,6 +9,7 @@
 #   ./uninstall.sh Nvim                # uninstall only Nvim
 #   ./uninstall.sh Tmux Shell          # uninstall selected tools
 #   ./uninstall.sh --allow-all         # do not prompt before non-symlink changes
+#   ./uninstall.sh --dry-run           # preview changes without modifying the system
 #
 # Safety:
 #   Removing owned symlinks is allowed by default. Non-symlink system changes,
@@ -51,6 +52,10 @@ parse_args() {
                 ;;
             --allow-all)
                 ALLOW_ALL=1
+                FORWARD_ARGS+=("$1")
+                ;;
+            --dry-run)
+                DRY_RUN=1
                 FORWARD_ARGS+=("$1")
                 ;;
             --color=auto)
@@ -109,7 +114,7 @@ fi
 banner "Tools Uninstall"
 printf '  %s %s\n' "$(paint "$CYAN" 'Repo:')" "$SCRIPT_DIR"
 printf '  %s %s\n' "$(paint "$CYAN" 'Tools:')" "${TOOLS_TO_UNINSTALL[*]}"
-printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Mode:')" "$([ "$DRY_RUN" = "1" ] && echo 'dry-run preview' || { [ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'symlinks auto, non-symlink changes confirm'; })"
 printf '  %s %s\n' "$(paint "$CYAN" 'Color:')" "$COLOR_MODE"
 
 for tool in "${TOOLS_TO_UNINSTALL[@]}"; do
@@ -118,6 +123,10 @@ done
 
 echo ""
 rule
-ok "Requested tools uninstalled"
+if [ "$DRY_RUN" = "1" ]; then
+    dry "Preview complete, no changes were made"
+else
+    ok "Requested tools uninstalled"
+fi
 info "Repo remains intact: $SCRIPT_DIR"
 rule
