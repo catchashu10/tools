@@ -39,8 +39,10 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ```bash
 ./install.sh              # safe default: symlinks auto, non-symlink changes ask first
 ./install.sh --dry-run    # preview install actions without changing the system
+./install.sh --check      # install, then run health.sh
 ./install.sh Nvim         # install only Nvim
 ./install.sh Shell Tmux   # install only Shell and Tmux
+./install.sh Shell --check # install Shell, then run health.sh Shell
 ./install.sh --allow-all  # install and skip all confirmation prompts
 
 ./uninstall.sh            # safe default: owned symlinks auto, other changes ask first
@@ -62,6 +64,7 @@ Install/uninstall safety model:
 - Symlink-only changes include linking a repo config into `~/.config` or removing an owned symlink during uninstall.
 - Non-symlink system changes ask first. Examples: package installs, `apt update`, GitHub downloads, copying `~/.bashrc`/`~/.zshrc`, backing up existing files, editing `~/.gitconfig`, cloning/updating `~/.tmux`, creating runtime directories, or restoring backup files.
 - Pass `--dry-run` to preview planned install/uninstall actions without changing files, installing packages, downloading tools, editing configs, or removing symlinks.
+- Pass `--check` to run `health.sh` after install completes. With selected tools, only those tool checks run; with no selected tools, all health checks run.
 - Pass `--allow-all` when you intentionally want the installer/uninstaller to perform those non-symlink changes without stopping for confirmation.
 - `--color=always`, `--color=never`, and `--no-color` are available on install, uninstall, and health scripts.
 - Install and uninstall runs end with grouped summaries showing `OK`, `WARN`, `ERROR`, `SKIP`, `DRY`, and `INFO` counts, plus details for warnings, skipped actions, errors, and dry-run plans.
