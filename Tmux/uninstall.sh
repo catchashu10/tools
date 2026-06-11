@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 # Tmux setup uninstaller
-#
-# Purpose:
-#   Remove Tmux-owned symlinks created by Tmux/install.sh.
-#
-# Safety:
-#   This script removes only symlinks that point to this Tmux folder or to the
-#   gpakosz ~/.tmux framework file used by this setup. It does not uninstall
-#   tmux, delete ~/.tmux, delete ~/.tmux-context, or delete this repo.
-#
-# Portability:
-#   Paths are resolved relative to this script so the repo can be cloned under
-#   any top-level folder name.
+# Removes Tmux-owned symlinks. Non-symlink restores prompt unless --allow-all.
 
 set -e
 
@@ -22,11 +11,55 @@ REMOVED=0
 RESTORED=0
 SKIPPED=0
 
+usage() {
+    cat <<USAGE
+Usage: $0 [options]
+
+Remove Tmux-owned symlinks created by the installer.
+
+Options:
+$(common_options_help)
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --allow-all) ALLOW_ALL=1 ;;
+        --color=auto) COLOR_MODE="auto" ;;
+        --color=always) COLOR_MODE="always" ;;
+        --color=never|--no-color) COLOR_MODE="never" ;;
+        --*) error "Unknown option: $1"; usage >&2; exit 1 ;;
+        *) error "Unknown argument for Tmux uninstaller: $1"; usage >&2; exit 1 ;;
+    esac
+    shift
+done
+
+setup_ui
+
+restore_backup_if_allowed() {
+    local dest="$1"
+    local backup="${dest}.bak"
+
+    if [ ! -f "$backup" ]; then
+        return 0
+    fi
+
+    if confirm_change "Restore backup $backup to $dest"; then
+        mv "$backup" "$dest"
+        ok "Restored $dest from $backup"
+        RESTORED=$((RESTORED + 1))
+    else
+        skip "Left backup in place: $backup"
+        SKIPPED=$((SKIPPED + 1))
+    fi
+}
+
 remove_owned_symlink() {
     local dest="$1"
 
     if [ ! -L "$dest" ]; then
-        echo "  No owned symlink at $dest — skipping"
+        skip "No owned symlink at $dest"
         return 0
     fi
 
@@ -36,48 +69,43 @@ remove_owned_symlink() {
     case "$target" in
         "$SCRIPT_DIR"/*|"$HOME/.tmux/.tmux.conf")
             rm "$dest"
-            echo "  Removed $dest"
+            ok "Removed symlink: $dest"
             REMOVED=$((REMOVED + 1))
-
-            if [ -f "${dest}.bak" ]; then
-                mv "${dest}.bak" "$dest"
-                echo "  Restored $dest from ${dest}.bak"
-                RESTORED=$((RESTORED + 1))
-            fi
+            restore_backup_if_allowed "$dest"
             ;;
         *)
-            warn "Skipping $dest — points outside this Tmux setup ($target)"
+            warn "Skipping $dest, points outside this Tmux setup: $target"
             SKIPPED=$((SKIPPED + 1))
             ;;
     esac
 }
 
-echo "=== Tmux Setup Uninstaller ==="
-echo ""
-echo "  Tmux folder: $SCRIPT_DIR"
-echo ""
+banner "Tmux Uninstall"
+printf '  %s %s\n' "$(paint "$CYAN" 'Tmux folder:')" "$SCRIPT_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
 
-step "Removing tmux config symlinks..."
+section "Config symlinks"
 remove_owned_symlink "$HOME/.tmux.conf"
 remove_owned_symlink "$HOME/.tmux.conf.local"
 
-step "Removing tmux themes symlink..."
+section "Themes symlink"
 remove_owned_symlink "$HOME/.tmux/themes"
 
-step "Removing tmux scripts from ~/.local/bin..."
+section "Scripts"
 if [ -d "$SCRIPT_DIR/scripts" ]; then
     for script in "$SCRIPT_DIR/scripts/"*; do
         [ -f "$script" ] || continue
         remove_owned_symlink "$HOME/.local/bin/$(basename "$script")"
     done
 else
-    echo "  No scripts directory found — skipping"
+    skip "No scripts directory found"
 fi
 
 echo ""
-step "Tmux uninstall complete"
-echo "  Symlinks removed: $REMOVED"
-echo "  Backups restored: $RESTORED"
-echo "  Skipped:          $SKIPPED"
-echo ""
-echo "  Not removed: tmux package, ~/.tmux, ~/.tmux-context, or this repo."
+rule
+ok "Tmux uninstall complete"
+info "Symlinks removed: $REMOVED"
+info "Backups restored: $RESTORED"
+info "Skipped: $SKIPPED"
+info "Not removed: tmux package, ~/.tmux, ~/.tmux-context, or this repo"
+rule

@@ -9,27 +9,55 @@ source "$SCRIPT_DIR/../setup/helpers.sh"
 
 NVIM_CONFIG_DIR="$HOME/.config/nvim"
 
-echo "=== Nvim Setup Uninstaller ==="
-echo ""
+usage() {
+    cat <<USAGE
+Usage: $0 [options]
 
+Remove the repo-owned ~/.config/nvim symlink.
+
+Options:
+$(common_options_help)
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --allow-all) ALLOW_ALL=1 ;;
+        --color=auto) COLOR_MODE="auto" ;;
+        --color=always) COLOR_MODE="always" ;;
+        --color=never|--no-color) COLOR_MODE="never" ;;
+        --*) error "Unknown option: $1"; usage >&2; exit 1 ;;
+        *) error "Unknown argument for Nvim uninstaller: $1"; usage >&2; exit 1 ;;
+    esac
+    shift
+done
+
+setup_ui
+
+banner "Nvim Uninstall"
+printf '  %s %s\n' "$(paint "$CYAN" 'Target:')" "$NVIM_CONFIG_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Nvim folder:')" "$SCRIPT_DIR"
+
+section "Config symlink"
 if [ ! -L "$NVIM_CONFIG_DIR" ]; then
     warn "$NVIM_CONFIG_DIR is not a symlink. Not touching it."
     exit 0
 fi
 
 current_target="$(readlink "$NVIM_CONFIG_DIR")"
-
 case "$current_target" in
     "$SCRIPT_DIR"/*)
         rm "$NVIM_CONFIG_DIR"
-        echo "  Removed $NVIM_CONFIG_DIR"
-        echo ""
-        echo "  Your Nvim configs are still intact under:"
-        echo "    $SCRIPT_DIR"
+        ok "Removed symlink: $NVIM_CONFIG_DIR"
+        info "Nvim configs remain intact under: $SCRIPT_DIR"
         ;;
     *)
-        warn "Refusing to remove symlink pointing outside this repo:"
-        echo "  $NVIM_CONFIG_DIR -> $current_target"
+        error "Refusing to remove symlink pointing outside this repo: $NVIM_CONFIG_DIR -> $current_target"
         exit 1
         ;;
 esac
+
+rule
+ok "Nvim uninstall complete"
+rule

@@ -11,6 +11,7 @@ A dotfiles-style configuration repo that tracks shell, Neovim, tmux configs, scr
 ```bash
 # Full setup on a new machine. The repo folder can be named anything.
 git clone https://github.com/catchashu10/tools.git <repo> && <repo>/install.sh
+# Use <repo>/install.sh --allow-all only when approved to skip confirmation prompts.
 
 # Individual tool setup
 <repo>/Shell/install.sh    # CLI tools + shell configs
@@ -48,11 +49,13 @@ Exception: `~/.gitconfig` is NOT symlinked (per-machine user.name/email). It use
 
 ### Shared Helpers
 
-All `install.sh` scripts source `setup/helpers.sh` which provides:
-- `symlink_config src dest` - backs up existing file, creates symlink
-- `install_pkg name` - installs via apt or brew
-- `install_github_binary owner/repo binary` - downloads from GitHub releases as fallback
-- `step` / `warn` - colored output helpers
+All `install.sh` and `uninstall.sh` scripts source `setup/helpers.sh` which provides:
+- shared UI helpers with section dividers, status icons, and color controls
+- `confirm_change message` - prompts before non-symlink system changes unless `--allow-all` is active
+- `ensure_dir path reason` - creates directories only after confirmation when needed
+- `symlink_config src dest` - creates/updates symlinks; prompts before backing up/replacing non-symlink destinations
+- `install_pkg name` - prompts, then installs via apt or brew
+- `install_github_binary owner/repo binary` - prompts, then downloads from GitHub releases as fallback
 
 ### Theme System (Tmux + Starship)
 
@@ -65,7 +68,8 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 - All text files use LF line endings (enforced via `.gitattributes` for WSL compatibility)
 - Scripts must be `#!/usr/bin/env bash` with `set -e`
 - Each tool folder follows the pattern: `README.md`, `install.sh`, `uninstall.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
-- Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic
+- Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic; they must propagate `--allow-all` and color options to child scripts
+- Install/uninstall scripts may perform symlink-only changes by default, but must prompt before non-symlink state changes such as package installs, downloads, file copies/backups, git clones/pulls, directory creation, backup restoration, or editing non-symlink config files
 - Top-level `health.sh` is read-only and should report setup issues without modifying files, installing packages, or running sync/update commands
 - Scripts should resolve paths relative to their own location (`SCRIPT_DIR=...`) and must not hardcode the repo's top-level folder name
 - `Learn/` contains reference guides (documentation only, no executable code)

@@ -1,20 +1,8 @@
 #!/usr/bin/env bash
 # Shell setup uninstaller
 #
-# Purpose:
-#   Remove Shell-owned symlinks and the git-delta include that Shell/install.sh
-#   adds to ~/.gitconfig. ~/.bashrc and ~/.zshrc are installed as local copies,
-#   so regular copied rc files are left in place during uninstall.
-#
-# Safety:
-#   This script removes only symlinks that point back into this Shell folder. If
-#   an older install left ~/.bashrc or ~/.zshrc as owned symlinks, removing those
-#   symlinks can restore a matching .bak file. Regular copied rc files are not
-#   deleted or restored automatically.
-#
-# Portability:
-#   Paths are resolved relative to this script so the repo can be cloned under
-#   any top-level folder name.
+# Removes Shell-owned symlinks and optionally edits non-symlink files only after
+# confirmation unless --allow-all is passed.
 
 set -e
 
@@ -25,11 +13,55 @@ REMOVED=0
 RESTORED=0
 SKIPPED=0
 
+usage() {
+    cat <<USAGE
+Usage: $0 [options]
+
+Remove Shell-owned symlinks and optional config entries.
+
+Options:
+$(common_options_help)
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --allow-all) ALLOW_ALL=1 ;;
+        --color=auto) COLOR_MODE="auto" ;;
+        --color=always) COLOR_MODE="always" ;;
+        --color=never|--no-color) COLOR_MODE="never" ;;
+        --*) error "Unknown option: $1"; usage >&2; exit 1 ;;
+        *) error "Unknown argument for Shell uninstaller: $1"; usage >&2; exit 1 ;;
+    esac
+    shift
+done
+
+setup_ui
+
+restore_backup_if_allowed() {
+    local dest="$1"
+    local backup="${dest}.bak"
+
+    if [ ! -f "$backup" ]; then
+        return 0
+    fi
+
+    if confirm_change "Restore backup $backup to $dest"; then
+        mv "$backup" "$dest"
+        ok "Restored $dest from $backup"
+        RESTORED=$((RESTORED + 1))
+    else
+        skip "Left backup in place: $backup"
+        SKIPPED=$((SKIPPED + 1))
+    fi
+}
+
 remove_owned_symlink() {
     local dest="$1"
 
     if [ ! -L "$dest" ]; then
-        echo "  No owned symlink at $dest — skipping"
+        skip "No owned symlink at $dest"
         return 0
     fi
 
@@ -39,19 +71,12 @@ remove_owned_symlink() {
     case "$target" in
         "$SCRIPT_DIR"/*)
             rm "$dest"
-            echo "  Removed $dest"
+            ok "Removed symlink: $dest"
             REMOVED=$((REMOVED + 1))
-
-            # symlink_config backs up existing files as <dest>.bak. Restore that
-            # backup if it exists after removing our symlink.
-            if [ -f "${dest}.bak" ]; then
-                mv "${dest}.bak" "$dest"
-                echo "  Restored $dest from ${dest}.bak"
-                RESTORED=$((RESTORED + 1))
-            fi
+            restore_backup_if_allowed "$dest"
             ;;
         *)
-            warn "Skipping $dest — points outside this Shell folder ($target)"
+            warn "Skipping $dest, points outside this Shell folder: $target"
             SKIPPED=$((SKIPPED + 1))
             ;;
     esac
@@ -63,10 +88,10 @@ note_local_copy() {
     if [ -L "$dest" ]; then
         remove_owned_symlink "$dest"
     elif [ -e "$dest" ]; then
-        echo "  $dest is a regular local file — leaving it in place"
-        echo "  Backups, if any, remain beside it as $dest.bak.*"
+        info "$dest is a regular local file, leaving it in place"
+        info "Backups, if any, remain beside it as $dest.bak.*"
     else
-        echo "  $dest not found — skipping"
+        skip "$dest not found"
     fi
 }
 
@@ -74,17 +99,21 @@ remove_delta_include() {
     local gitconfig="$HOME/.gitconfig"
 
     if [ ! -f "$gitconfig" ]; then
-        echo "  No ~/.gitconfig found — skipping"
+        skip "No ~/.gitconfig found"
         return 0
     fi
 
     if ! grep -q 'delta.gitconfig' "$gitconfig"; then
-        echo "  No delta.gitconfig include found — skipping"
+        skip "No delta.gitconfig include found in ~/.gitconfig"
         return 0
     fi
 
-    # Remove any [include] block that references delta.gitconfig. This handles
-    # both old hardcoded entries and the current repo-relative installer output.
+    if ! confirm_change "Remove delta.gitconfig include block from ~/.gitconfig"; then
+        skip "Left ~/.gitconfig unchanged"
+        SKIPPED=$((SKIPPED + 1))
+        return 0
+    fi
+
     python3 - "$gitconfig" <<'PY'
 import sys
 from pathlib import Path
@@ -113,40 +142,40 @@ while i < len(lines):
 path.write_text("".join(out).rstrip() + "\n")
 print("removed" if removed else "not-found")
 PY
-    echo "  Removed delta.gitconfig include from ~/.gitconfig"
+    ok "Removed delta.gitconfig include from ~/.gitconfig"
     REMOVED=$((REMOVED + 1))
 }
 
-echo "=== Shell Setup Uninstaller ==="
-echo ""
-echo "  Shell folder: $SCRIPT_DIR"
-echo ""
+banner "Shell Uninstall"
+printf '  %s %s\n' "$(paint "$CYAN" 'Shell folder:')" "$SCRIPT_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
 
-step "Handling machine-local shell rc files..."
+section "Machine-local shell rc files"
 note_local_copy "$HOME/.bashrc"
 note_local_copy "$HOME/.zshrc"
 
-step "Removing Shell-owned config symlinks..."
+section "Tool-owned config symlinks"
 remove_owned_symlink "$HOME/.config/starship.toml"
 remove_owned_symlink "$HOME/.config/bat/env"
 
-step "Removing shell scripts from ~/.local/bin..."
+section "Shell scripts"
 if [ -d "$SCRIPT_DIR/scripts" ]; then
     for script in "$SCRIPT_DIR/scripts/"*; do
         [ -f "$script" ] || continue
         remove_owned_symlink "$HOME/.local/bin/$(basename "$script")"
     done
 else
-    echo "  No scripts directory found — skipping"
+    skip "No scripts directory found"
 fi
 
-step "Removing git delta include..."
+section "Git delta"
 remove_delta_include
 
 echo ""
-step "Shell uninstall complete"
-echo "  Symlinks/config entries removed: $REMOVED"
-echo "  Backups restored:              $RESTORED"
-echo "  Skipped:                       $SKIPPED"
-echo ""
-echo "  Not removed: copied ~/.bashrc and ~/.zshrc files, CLI packages, NVM, Starship, or this repo."
+rule
+ok "Shell uninstall complete"
+info "Symlinks/config entries removed: $REMOVED"
+info "Backups restored: $RESTORED"
+info "Skipped: $SKIPPED"
+info "Not removed: copied ~/.bashrc and ~/.zshrc, CLI packages, NVM, Starship, or this repo"
+rule

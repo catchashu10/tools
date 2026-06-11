@@ -37,12 +37,14 @@ Each tool folder follows this pattern:
 The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestration scripts. Install/uninstall scripts run tool-level scripts in a safe order for setup/teardown, and can also target specific tools. `health.sh` is read-only and checks whether expected files, symlinks, commands, and generated folders look correct.
 
 ```bash
-./install.sh              # install Shell, Nvim, Tmux
+./install.sh              # install Shell, Nvim, Tmux; prompts before non-symlink changes
 ./install.sh Nvim         # install only Nvim
 ./install.sh Shell Tmux   # install only Shell and Tmux
+./install.sh --allow-all  # install without confirmation prompts
 
-./uninstall.sh            # uninstall Tmux, Nvim, Shell
+./uninstall.sh            # uninstall Tmux, Nvim, Shell; prompts before non-symlink changes
 ./uninstall.sh Nvim       # uninstall only Nvim
+./uninstall.sh --allow-all # uninstall without confirmation prompts
 
 ./health.sh               # check Repo, Shell, Nvim, Tmux
 ./health.sh Nvim          # check only Nvim
@@ -51,6 +53,13 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ```
 
 Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
+
+Install/uninstall safety model:
+
+- Symlink-only changes, such as linking a repo config into `~/.config`, are allowed by default.
+- Non-symlink system changes prompt by default. Examples: package installs, `apt update`, GitHub downloads, copying `~/.bashrc`/`~/.zshrc`, backing up existing files, editing `~/.gitconfig`, cloning/updating `~/.tmux`, creating runtime directories, or restoring backup files.
+- Pass `--allow-all` when you intentionally want the installer/uninstaller to perform those non-symlink changes without stopping for confirmation.
+- `--color=always`, `--color=never`, and `--no-color` are available on install, uninstall, and health scripts.
 
 After running `install.sh`, machine-local shell rc files are copied from repo templates, while tool-owned configs/scripts are symlinked back to this repo:
 ```

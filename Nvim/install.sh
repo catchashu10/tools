@@ -1,116 +1,130 @@
 #!/usr/bin/env bash
 # Nvim setup installer
 # Usage:
-#   ./install.sh
-#   ./install.sh lazyNvim
-#   ./install.sh lazyNvim --force-clean
+#   ./install.sh [flavor] [--force-clean] [--allow-all]
 #
 # Creates ~/.config/nvim as a symlink to one Nvim flavor in this repo.
-# The repo folder can be named anything and live anywhere.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../setup/helpers.sh"
 
-FLAVOR="${1:-lazyNvim}"
-FORCE_CLEAN="${2:-}"
+FLAVOR="lazyNvim"
+FORCE_CLEAN=0
+
+usage() {
+    cat <<USAGE
+Usage: $0 [options] [flavor]
+
+Install one Neovim config flavor. Default flavor: lazyNvim.
+
+Options:
+  --force-clean     Remove existing Neovim runtime/cache dirs instead of backing them up
+$(common_options_help)
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help) usage; exit 0 ;;
+        --force-clean) FORCE_CLEAN=1 ;;
+        --allow-all) ALLOW_ALL=1 ;;
+        --color=auto) COLOR_MODE="auto" ;;
+        --color=always) COLOR_MODE="always" ;;
+        --color=never|--no-color) COLOR_MODE="never" ;;
+        --*) error "Unknown option: $1"; usage >&2; exit 1 ;;
+        *) FLAVOR="$1" ;;
+    esac
+    shift
+done
+
+setup_ui
 
 NVIM_FLAVOR_DIR="$SCRIPT_DIR/$FLAVOR"
 NVIM_CONFIG_DIR="$HOME/.config/nvim"
 
 backup_or_remove() {
     local path="$1"
-    local timestamp
+    local timestamp backup
     timestamp="$(date +%Y%m%d-%H%M%S)"
+    backup="$path.bak.$timestamp"
 
-    if [ -e "$path" ] || [ -L "$path" ]; then
-        if [ "$FORCE_CLEAN" = "--force-clean" ]; then
-            warn "Removing existing $path"
+    if [ ! -e "$path" ] && [ ! -L "$path" ]; then
+        return 0
+    fi
+
+    if [ "$FORCE_CLEAN" = "1" ]; then
+        if confirm_change "Remove existing path: $path"; then
             rm -rf "$path"
+            ok "Removed $path"
         else
-            warn "Backing up existing $path"
-            mv "$path" "$path.bak.$timestamp"
-            echo "  $path -> $path.bak.$timestamp"
+            skip "Left $path unchanged"
+        fi
+    else
+        if confirm_change "Back up existing path: $path -> $backup"; then
+            mv "$path" "$backup"
+            ok "Backed up $path -> $backup"
+        else
+            skip "Left $path unchanged"
         fi
     fi
 }
 
-if [ -n "$FORCE_CLEAN" ] && [ "$FORCE_CLEAN" != "--force-clean" ]; then
-    warn "Unknown option: $FORCE_CLEAN"
-    echo "Usage: $0 [flavor] [--force-clean]"
-    exit 1
-fi
-
-echo "=== Nvim Setup Installer ==="
-echo ""
-echo "  Flavor: $FLAVOR"
-echo "  Source: $NVIM_FLAVOR_DIR"
-echo "  Target: $NVIM_CONFIG_DIR"
-echo ""
+banner "Nvim Setup"
+printf '  %s %s\n' "$(paint "$CYAN" 'Flavor:')" "$FLAVOR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Source:')" "$NVIM_FLAVOR_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Target:')" "$NVIM_CONFIG_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Runtime mode:')" "$([ "$FORCE_CLEAN" = "1" ] && echo 'force-clean' || echo 'backup')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
 
 if [ ! -d "$NVIM_FLAVOR_DIR" ]; then
-    warn "Nvim flavor not found: $NVIM_FLAVOR_DIR"
+    error "Nvim flavor not found: $NVIM_FLAVOR_DIR"
     echo ""
     echo "Available flavors:"
     find "$SCRIPT_DIR" -mindepth 1 -maxdepth 1 -type d -printf "  %f\n" | sort
     exit 1
 fi
 
-step "Checking dependencies..."
-
-if ! command -v nvim >/dev/null 2>&1; then
-    warn "nvim not found. Installing..."
-    install_pkg neovim
+section "Dependencies"
+command -v nvim >/dev/null 2>&1 && ok "nvim found" || { warn "nvim not found"; install_pkg neovim; }
+command -v git >/dev/null 2>&1 && ok "git found" || { warn "git not found"; install_pkg git; }
+command -v rg >/dev/null 2>&1 && ok "ripgrep found" || { warn "ripgrep not found"; install_pkg ripgrep; }
+if command -v fd >/dev/null 2>&1 || command -v fdfind >/dev/null 2>&1; then
+    ok "fd found"
+else
+    warn "fd not found"
+    install_pkg fd-find || install_pkg fd || true
 fi
 
-if ! command -v git >/dev/null 2>&1; then
-    warn "git not found. Installing..."
-    install_pkg git
-fi
-
-if ! command -v rg >/dev/null 2>&1; then
-    warn "ripgrep not found. Installing..."
-    install_pkg ripgrep
-fi
-
-if ! command -v fd >/dev/null 2>&1 && ! command -v fdfind >/dev/null 2>&1; then
-    warn "fd not found. Installing..."
-    install_pkg fd-find || install_pkg fd
-fi
-
-step "Preparing clean Neovim runtime directories..."
+section "Runtime directories"
 backup_or_remove "$HOME/.local/share/nvim"
 backup_or_remove "$HOME/.local/state/nvim"
 backup_or_remove "$HOME/.cache/nvim"
 
-step "Linking Neovim config..."
-mkdir -p "$HOME/.config"
-
+section "Neovim config symlink"
 if [ -L "$NVIM_CONFIG_DIR" ]; then
     current_target="$(readlink "$NVIM_CONFIG_DIR")"
     if [ "$current_target" = "$NVIM_FLAVOR_DIR" ]; then
-        echo "  Already linked: $NVIM_CONFIG_DIR -> $NVIM_FLAVOR_DIR"
+        ok "Already linked: $NVIM_CONFIG_DIR -> $NVIM_FLAVOR_DIR"
     else
         backup_or_remove "$NVIM_CONFIG_DIR"
-        ln -s "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
-        echo "  $NVIM_CONFIG_DIR -> $NVIM_FLAVOR_DIR"
+        if [ ! -e "$NVIM_CONFIG_DIR" ] && [ ! -L "$NVIM_CONFIG_DIR" ]; then
+            symlink_config "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
+        fi
     fi
 elif [ -e "$NVIM_CONFIG_DIR" ]; then
     backup_or_remove "$NVIM_CONFIG_DIR"
-    ln -s "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
-    echo "  $NVIM_CONFIG_DIR -> $NVIM_FLAVOR_DIR"
+    if [ ! -e "$NVIM_CONFIG_DIR" ] && [ ! -L "$NVIM_CONFIG_DIR" ]; then
+        symlink_config "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
+    fi
 else
-    ln -s "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
-    echo "  $NVIM_CONFIG_DIR -> $NVIM_FLAVOR_DIR"
+    symlink_config "$NVIM_FLAVOR_DIR" "$NVIM_CONFIG_DIR"
 fi
 
 echo ""
-step "Installation complete!"
-echo ""
-echo "  Start Neovim:"
-echo "    nvim"
-echo ""
-echo "  Then run inside Neovim:"
-echo "    :LazyHealth"
-echo ""
+rule
+ok "Nvim installation complete"
+info "Start Neovim with: nvim"
+info "Then run inside Neovim: :LazyHealth"
+rule

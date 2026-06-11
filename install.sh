@@ -5,28 +5,82 @@
 #   Run one or more tool-specific installers from this repo.
 #
 # Usage:
-#   ./install.sh             # install every tool in the default order
-#   ./install.sh Shell       # install only Shell
-#   ./install.sh Nvim Tmux   # install only Nvim and Tmux, in that order
+#   ./install.sh                     # install every tool in default order
+#   ./install.sh Shell               # install only Shell
+#   ./install.sh Nvim Tmux           # install only Nvim and Tmux
+#   ./install.sh --allow-all         # do not prompt before non-symlink changes
 #
-# Portability:
-#   This script resolves the repo path from its own location. The repo can be
-#   cloned under any folder name; do not hardcode the top-level folder name.
+# Safety:
+#   Symlink-only changes are allowed by default. Non-symlink system changes such
+#   as package installs, file copies, backups, git clones/pulls, and config edits
+#   prompt unless --allow-all is passed.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/setup/helpers.sh"
 
-# Default install order. Shell goes first because it prepares common CLI tools
-# and PATH conventions used by other tool setups.
 DEFAULT_TOOLS=(Shell Nvim Tmux)
+TOOLS_TO_INSTALL=()
+FORWARD_ARGS=()
 
 usage() {
-    echo "Usage: $0 [tool ...]"
-    echo ""
-    echo "Available tools:"
+    cat <<USAGE
+Usage: $0 [options] [tool ...]
+
+Install all tools or selected tools from this repo.
+
+Options:
+$(common_options_help)
+
+Available tools:
+USAGE
     for tool in "${DEFAULT_TOOLS[@]}"; do
         echo "  $tool"
+    done
+}
+
+parse_args() {
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            --allow-all)
+                ALLOW_ALL=1
+                FORWARD_ARGS+=("$1")
+                ;;
+            --color=auto)
+                COLOR_MODE="auto"
+                FORWARD_ARGS+=("$1")
+                ;;
+            --color=always)
+                COLOR_MODE="always"
+                FORWARD_ARGS+=("$1")
+                ;;
+            --color=never|--no-color)
+                COLOR_MODE="never"
+                FORWARD_ARGS+=("$1")
+                ;;
+            --)
+                shift
+                while [ "$#" -gt 0 ]; do
+                    TOOLS_TO_INSTALL+=("$1")
+                    shift
+                done
+                break
+                ;;
+            --*)
+                error "Unknown option: $1"
+                usage >&2
+                exit 1
+                ;;
+            *)
+                TOOLS_TO_INSTALL+=("$1")
+                ;;
+        esac
+        shift
     done
 }
 
@@ -35,38 +89,33 @@ run_tool_installer() {
     local installer="$SCRIPT_DIR/$tool/install.sh"
 
     if [ ! -x "$installer" ]; then
-        echo "ERROR: installer not found or not executable: $installer" >&2
+        error "Installer not found or not executable: $installer"
         exit 1
     fi
 
-    echo "--- $tool Setup ---"
-    "$installer"
-    echo ""
+    section "$tool install"
+    "$installer" "${FORWARD_ARGS[@]}"
 }
 
-if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
-    usage
-    exit 0
-fi
+parse_args "$@"
+setup_ui
 
-TOOLS_TO_INSTALL=("${@:-}")
-if [ "$#" -eq 0 ]; then
+if [ "${#TOOLS_TO_INSTALL[@]}" -eq 0 ]; then
     TOOLS_TO_INSTALL=("${DEFAULT_TOOLS[@]}")
 fi
 
-echo "========================================="
-echo "  Tools — Setup"
-echo "========================================="
-echo ""
-echo "  Repo: $SCRIPT_DIR"
-echo "  Tools: ${TOOLS_TO_INSTALL[*]}"
-echo ""
+banner "Tools Setup"
+printf '  %s %s\n' "$(paint "$CYAN" 'Repo:')" "$SCRIPT_DIR"
+printf '  %s %s\n' "$(paint "$CYAN" 'Tools:')" "${TOOLS_TO_INSTALL[*]}"
+printf '  %s %s\n' "$(paint "$CYAN" 'Prompt mode:')" "$([ "$ALLOW_ALL" = "1" ] && echo 'allow-all' || echo 'confirm non-symlink changes')"
+printf '  %s %s\n' "$(paint "$CYAN" 'Color:')" "$COLOR_MODE"
 
 for tool in "${TOOLS_TO_INSTALL[@]}"; do
     run_tool_installer "$tool"
 done
 
-echo "========================================="
-echo "  Requested tools installed!"
-echo "  Restart your shell to pick up changes."
-echo "========================================="
+echo ""
+rule
+ok "Requested tools installed"
+info "Restart your shell to pick up changes"
+rule
