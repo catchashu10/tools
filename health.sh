@@ -331,6 +331,7 @@ check_repo() {
     check_executable "Top-level installer" "$SCRIPT_DIR/install.sh"
     check_executable "Top-level uninstaller" "$SCRIPT_DIR/uninstall.sh"
     check_executable "Top-level health check" "$SCRIPT_DIR/health.sh"
+    check_executable "Top-level smoke test" "$SCRIPT_DIR/test.sh"
 
     local tool
     for tool in "${TOOLS[@]}"; do

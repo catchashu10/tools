@@ -24,13 +24,14 @@ git clone https://github.com/catchashu10/tools.git <repo> && <repo>/install.sh
 <repo>/Nvim/uninstall.sh
 <repo>/Tmux/uninstall.sh
 
-# Health check, read-only
+# Health and smoke checks, read-only
 <repo>/health.sh             # Repo + Shell + Nvim + Tmux
 <repo>/health.sh Nvim        # Only Nvim
 <repo>/health.sh --color=always
+<repo>/test.sh               # Syntax/help/health/dry-run smoke tests
 ```
 
-No build system, test framework, or linter. All scripts are plain bash.
+This repo has a lightweight Bash smoke test runner. Run `<repo>/test.sh` after installer changes; it checks syntax, help output, health output, temporary-`HOME` dry-runs, hardcoded path scans, and ShellCheck when installed.
 
 ## Architecture
 
@@ -72,5 +73,6 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 - Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic; they must source `tools.conf` for `TOOLS`, `INSTALL_ORDER`, `UNINSTALL_ORDER`, `HEALTH_CHECKS`, and `EXTRA_HEALTH_CHECKS`, and propagate `--dry-run`, `--allow-all`, and color options to child scripts. Top-level `install.sh --check` should run `health.sh` after install completes; selected tools map to selected health checks, while no selected tools runs all health checks.
 - Install/uninstall scripts may perform symlink-only changes by default, but must prompt before non-symlink state changes such as package installs, downloads, file copies/backups, git clones/pulls, directory creation, backup restoration, or editing non-symlink config files. `--dry-run` must preview both symlink and non-symlink changes without modifying state.
 - Top-level `health.sh` is read-only and should report setup issues without modifying files, installing packages, or running sync/update commands. It should also support `health.sh Backups` to list known timestamped installer backups without changing state, and `health.sh ShellCheck` to run shellcheck across tracked shell scripts when shellcheck is installed.
+- Top-level `test.sh` is a read-only smoke runner for maintenance changes. It should cover syntax, help output, health output, temporary-`HOME` dry-runs, hardcoded path scans, and ShellCheck when installed.
 - Scripts should resolve paths relative to their own location (`SCRIPT_DIR=...`) and must not hardcode the repo's top-level folder name
 - `Learn/` contains reference guides (documentation only, no executable code)

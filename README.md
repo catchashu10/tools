@@ -56,6 +56,7 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ./health.sh Backups       # list known installer-created backups
 ./health.sh ShellCheck    # lint shell scripts when shellcheck is installed
 ./health.sh --color=always # force colored output, useful when piped/logged
+./test.sh                 # run repo smoke tests
 ```
 
 Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Top-level tool order and health target metadata live in `tools.conf`. Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
@@ -102,6 +103,14 @@ For shell linting, install `shellcheck` and run:
 ```
 
 If `shellcheck` is not installed, this check reports a warning with install hints instead of failing.
+
+For maintenance smoke tests, run:
+
+```bash
+./test.sh
+```
+
+This read-only test runner checks shell syntax, help output, health output, temporary-`HOME` dry-run smoke flows, hardcoded path scans, and ShellCheck when installed.
 
 ## Quick Setup on a New Machine
 
