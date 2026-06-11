@@ -53,6 +53,7 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ./health.sh               # check Repo, Shell, Nvim, Tmux
 ./health.sh Nvim          # check only Nvim
 ./health.sh Shell Tmux    # check selected tools
+./health.sh Backups       # list known installer-created backups
 ./health.sh --color=always # force colored output, useful when piped/logged
 ```
 
@@ -85,7 +86,13 @@ After running `install.sh`, machine-local shell rc files are copied from repo te
 
 **Not symlinked:** `~/.gitconfig` stays per-machine (different user.name/email per host) and uses `[include]` to pull in `<repo>/Shell/config/delta.gitconfig`. `Shell/install.sh` writes the current absolute repo path into that include, so it works no matter where the repo was cloned.
 
-`Shell/install.sh` backs up any existing `~/.bashrc`/`~/.zshrc` to timestamped `.bak.*` files before copying the repo templates. `Shell/uninstall.sh` leaves copied rc files in place; it only restores backups when removing an older owned symlink.
+`Shell/install.sh` backs up any existing `~/.bashrc`/`~/.zshrc` to timestamped `.bak.*` files before copying the repo templates. `Shell/uninstall.sh` leaves copied rc files in place; it only restores backups when removing an older owned symlink. To find backups later, run:
+
+```bash
+./health.sh Backups
+```
+
+This read-only check lists known shell rc, Neovim runtime/config, and Tmux theme backups created by the installers.
 
 ## Quick Setup on a New Machine
 

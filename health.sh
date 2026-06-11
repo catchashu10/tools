@@ -9,6 +9,7 @@
 #   ./health.sh                  # check all tools
 #   ./health.sh Shell            # check one tool
 #   ./health.sh Shell Nvim       # check selected tools
+#   ./health.sh Backups          # list known timestamped backups
 #   ./health.sh --color=always   # force ANSI colors, useful when output is piped
 #   ./health.sh --no-color       # disable ANSI colors
 #
@@ -20,6 +21,7 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEFAULT_TOOLS=(Repo Shell Nvim Tmux)
+AVAILABLE_CHECKS=(Repo Shell Nvim Tmux Backups)
 
 PASS_COUNT=0
 WARN_COUNT=0
@@ -133,9 +135,15 @@ Options:
 
 Available checks:
 USAGE
-    for tool in "${DEFAULT_TOOLS[@]}"; do
+    for tool in "${AVAILABLE_CHECKS[@]}"; do
         echo "  $tool"
     done
+    cat <<'USAGE'
+
+Backup discovery:
+  Backups lists known .bak.* files created by installers, including shell rc,
+  Neovim runtime/config, and Tmux theme backups. It is read-only.
+USAGE
 }
 
 command_path() {
@@ -455,12 +463,44 @@ check_tmux() {
     fi
 }
 
+
+print_backup_matches() {
+    local label="$1"
+    shift
+
+    local found=0
+    local pattern match
+    for pattern in "$@"; do
+        while IFS= read -r match; do
+            [ -n "$match" ] || continue
+            info "$label backup: $match"
+            found=1
+        done < <(find "$(dirname "$pattern")" -maxdepth 1 -name "$(basename "$pattern")" -print 2>/dev/null | sort)
+    done
+
+    if [ "$found" -eq 0 ]; then
+        pass "No $label backups found"
+    fi
+}
+
+check_backups() {
+    section "Backups"
+    info "Known installer backups use timestamped .bak.* names and are left in place until you remove or restore them."
+
+    print_backup_matches "Shell rc"         "$HOME/.bashrc.bak.*"         "$HOME/.zshrc.bak.*"
+
+    print_backup_matches "Neovim"         "$HOME/.config/nvim.bak.*"         "$HOME/.local/share/nvim.bak.*"         "$HOME/.local/state/nvim.bak.*"         "$HOME/.cache/nvim.bak.*"
+
+    print_backup_matches "Tmux"         "$HOME/.tmux/themes.bak.*"
+}
+
 run_check() {
     case "$1" in
         Repo) check_repo ;;
         Shell) check_shell ;;
         Nvim) check_nvim ;;
         Tmux) check_tmux ;;
+        Backups) check_backups ;;
         *)
             echo "ERROR: unknown health check: $1" >&2
             usage >&2
