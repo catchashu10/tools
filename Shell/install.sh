@@ -1,14 +1,30 @@
 #!/usr/bin/env bash
-# Shell setup installer (symlink mode)
-# Usage: git clone <repo> ~/Tools && ~/Tools/Shell/install.sh
+# Shell setup installer
+# Usage: <repo>/Shell/install.sh
 #
-# Installs CLI tools, symlinks shell configs into place.
-# The repo folder must remain in place — it IS your config.
+# Installs CLI tools, copies machine-local shell rc templates, and symlinks
+# tool-owned shell configs/scripts into place.
+# Paths are resolved relative to this script so the repo folder can have any name.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../setup/helpers.sh"
+
+copy_shell_rc() {
+    local src="$1" dest="$2"
+    local timestamp
+    timestamp="$(date +%Y%m%d-%H%M%S)"
+
+    if [ -e "$dest" ] || [ -L "$dest" ]; then
+        warn "Backing up existing $dest -> $dest.bak.$timestamp"
+        mv "$dest" "$dest.bak.$timestamp"
+    fi
+
+    cp "$src" "$dest"
+    chmod 0644 "$dest"
+    echo "  Copied $src -> $dest"
+}
 
 echo "=== Shell Setup Installer ==="
 echo ""
@@ -115,13 +131,19 @@ else
     echo "  NVM installed — restart shell to use"
 fi
 
-# -- 5. symlink configs ------------------------------------------------------
+# -- 5. install shell config files -------------------------------------------
 
-step "Linking shell configs..."
+step "Installing shell config files..."
 mkdir -p "$HOME/.config" "$HOME/.config/bat"
 
-symlink_config "$SCRIPT_DIR/config/bashrc"        "$HOME/.bashrc"
-symlink_config "$SCRIPT_DIR/config/zshrc"          "$HOME/.zshrc"
+# ~/.bashrc and ~/.zshrc are copied, not symlinked, because shell rc files tend
+# to drift per machine. The repo keeps good defaults for bootstrapping new
+# systems, while each machine gets an editable local copy.
+copy_shell_rc "$SCRIPT_DIR/config/bashrc" "$HOME/.bashrc"
+copy_shell_rc "$SCRIPT_DIR/config/zshrc" "$HOME/.zshrc"
+
+# Starship and bat env are tool-owned configs, so keeping them symlinked makes
+# theme/tool updates flow through the repo cleanly.
 symlink_config "$SCRIPT_DIR/config/starship.toml"  "$HOME/.config/starship.toml"
 symlink_config "$SCRIPT_DIR/config/bat-env"        "$HOME/.config/bat/env"
 
@@ -144,18 +166,45 @@ fi
 # -- 7. git delta config -----------------------------------------------------
 
 step "Checking git delta config..."
-if grep -q 'delta.gitconfig' "$HOME/.gitconfig" 2>/dev/null; then
-    echo "  delta.gitconfig already included in ~/.gitconfig"
-else
-    if [ -f "$HOME/.gitconfig" ]; then
-        echo "" >> "$HOME/.gitconfig"
-    fi
-    cat >> "$HOME/.gitconfig" <<'GITEOF'
-[include]
-	path = ~/Tools/Shell/config/delta.gitconfig
-GITEOF
-    echo "  Added [include] for delta.gitconfig to ~/.gitconfig"
-fi
+delta_include_path="$SCRIPT_DIR/config/delta.gitconfig"
+python3 - "$HOME/.gitconfig" "$delta_include_path" <<'PY'
+import sys
+from pathlib import Path
+
+gitconfig = Path(sys.argv[1])
+delta_path = sys.argv[2]
+
+if gitconfig.exists():
+    lines = gitconfig.read_text().splitlines(keepends=True)
+else:
+    lines = []
+
+out = []
+i = 0
+removed_old_delta_include = False
+while i < len(lines):
+    if lines[i].strip() == "[include]":
+        block = [lines[i]]
+        i += 1
+        while i < len(lines) and not lines[i].lstrip().startswith("["):
+            block.append(lines[i])
+            i += 1
+        if any("delta.gitconfig" in line for line in block):
+            removed_old_delta_include = True
+            continue
+        out.extend(block)
+    else:
+        out.append(lines[i])
+        i += 1
+
+if out and out[-1].strip():
+    out.append("\n")
+out.extend(["[include]\n", f"	path = {delta_path}\n"])
+
+gitconfig.write_text("".join(out))
+print("updated" if removed_old_delta_include else "added")
+PY
+echo "  Ensured [include] for delta.gitconfig in ~/.gitconfig"
 
 # -- 8. ensure ~/.local/bin in PATH ------------------------------------------
 
@@ -169,9 +218,10 @@ fi
 echo ""
 step "Installation complete!"
 echo ""
-echo "  Shell configs are symlinked to this repo."
-echo "  Edit anywhere — changes reflect everywhere."
-echo "  DO NOT delete this folder ($SCRIPT_DIR)."
+echo "  Shell rc files were copied to ~/.bashrc and ~/.zshrc."
+echo "  They are machine-local now, so edits there will not dirty this repo."
+echo "  Tool-owned configs/scripts are still symlinked to this repo."
+echo "  DO NOT delete this folder ($SCRIPT_DIR) while symlinked configs remain."
 echo ""
 echo "  Installed tools:"
 echo "    bat (batcat)  — syntax-highlighted cat"

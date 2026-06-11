@@ -1,5 +1,5 @@
 # Git delta — beautiful side-by-side diffs
-# Included from ~/.gitconfig via [include] path = ~/Tools/Shell/config/delta.gitconfig
+# Included from ~/.gitconfig by Shell/install.sh using this file's current repo-relative absolute path.
 
 [core]
 	pager = delta

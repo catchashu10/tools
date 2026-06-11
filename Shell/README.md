@@ -28,8 +28,8 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 
 | File | Location | Purpose |
 |------|----------|---------|
-| **Bash config** | **`~/.bashrc`** | Symlink → repo `config/bashrc` |
-| **Zsh config** | **`~/.zshrc`** | Symlink → repo `config/zshrc` |
+| **Bash config** | **`~/.bashrc`** | Copied from repo `config/bashrc`, then customized per machine |
+| **Zsh config** | **`~/.zshrc`** | Copied from repo `config/zshrc`, then customized per machine |
 | **Starship config** | **`~/.config/starship.toml`** | Symlink → repo `config/starship.toml` |
 | **Delta config** | **`~/.gitconfig [include]`** | Included from repo `config/delta.gitconfig` |
 | **Bat theme** | **`~/.config/bat/env`** | `BAT_THEME` — shared by bat + delta |
@@ -38,9 +38,10 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
 ## Repo Structure
 
 ```
-~/Tools/Shell/
+<repo>/Shell/
 ├── README.md                         # This file
-├── install.sh                        # Run this on a new machine
+├── install.sh                        # Tool-specific installer
+├── uninstall.sh                      # Tool-specific uninstaller
 ├── scripts/
 │   └── bat-theme                     # Interactive bat/delta theme switcher
 └── config/
@@ -50,18 +51,18 @@ Bash and Zsh configs with modern CLI tools and Starship prompt.
     └── delta.gitconfig               # Git delta config (included from ~/.gitconfig)
 ```
 
-After install, symlinks point FROM dotfile locations TO this repo:
+After install, shell rc files are copied so each machine can drift locally, while tool-owned configs/scripts are symlinked back to this repo:
 ```
-~/.bashrc                → ~/Tools/Shell/config/bashrc
-~/.zshrc                 → ~/Tools/Shell/config/zshrc
-~/.config/starship.toml  → ~/Tools/Shell/config/starship.toml
-~/.local/bin/bat-theme   → ~/Tools/Shell/scripts/bat-theme
+~/.bashrc                copied from <repo>/Shell/config/bashrc
+~/.zshrc                 copied from <repo>/Shell/config/zshrc
+~/.config/starship.toml  → <repo>/Shell/config/starship.toml
+~/.local/bin/bat-theme   → <repo>/Shell/scripts/bat-theme
 ```
 
 Git delta config is **included** (not symlinked) via `~/.gitconfig`:
 ```
 [include]
-    path = ~/Tools/Shell/config/delta.gitconfig
+    path = <repo>/Shell/config/delta.gitconfig
 ```
 
 ## What's Included
@@ -110,12 +111,12 @@ All 15 tmux themes have matching starship palettes. Switching themes via `prefix
 ## Replicating on a New Machine
 
 ```bash
-# 1. Clone the repo
-git clone http://tools.ashukumar.com ~/Tools
-# or: git clone https://github.com/catchashu10/tools.git ~/Tools
+# 1. Clone the repo. The folder name can be anything.
+git clone http://tools.ashukumar.com <repo>
+# or: git clone https://github.com/catchashu10/tools.git <repo>
 
 # 2. Run the installer
-~/Tools/Shell/install.sh
+<repo>/Shell/install.sh
 
 # 3. Restart your shell
 exec bash   # or: exec zsh
@@ -124,4 +125,4 @@ exec bash   # or: exec zsh
 nvm install --lts
 ```
 
-The installer handles everything: zsh, CLI tools (bat, eza, fd, ripgrep, fzf, zoxide), starship, NVM, config symlinks, and PATH setup.
+The installer handles everything: zsh, CLI tools (bat, eza, fd, ripgrep, fzf, zoxide), starship, NVM, copied shell rc files, config symlinks, and PATH setup. Existing `~/.bashrc` and `~/.zshrc` are backed up to timestamped `.bak.*` files before the repo templates are copied.

@@ -29,9 +29,10 @@ Terminal multiplexer with gpakosz/.tmux framework, custom themes, and capture to
 ## Repo Structure
 
 ```
-~/Tools/Tmux/
+<repo>/Tmux/
 ├── README.md                         # This file
-├── install.sh                        # Run this on a new machine
+├── install.sh                        # Tool-specific installer
+├── uninstall.sh                      # Tool-specific uninstaller
 ├── config/
 │   └── tmux.conf.local               # All tmux customizations
 ├── themes/
@@ -48,11 +49,11 @@ Terminal multiplexer with gpakosz/.tmux framework, custom themes, and capture to
 
 After install, symlinks point FROM dotfile locations TO this repo:
 ```
-~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
-~/.tmux/themes/         → ~/Tools/Tmux/themes/
-~/.local/bin/tmux-theme → ~/Tools/Tmux/scripts/tmux-theme
-~/.local/bin/tmux-capture → ~/Tools/Tmux/scripts/tmux-capture
-~/.local/bin/capture    → ~/Tools/Tmux/scripts/capture
+~/.tmux.conf.local      → <repo>/Tmux/config/tmux.conf.local
+~/.tmux/themes/         → <repo>/Tmux/themes/
+~/.local/bin/tmux-theme → <repo>/Tmux/scripts/tmux-theme
+~/.local/bin/tmux-capture → <repo>/Tmux/scripts/tmux-capture
+~/.local/bin/capture    → <repo>/Tmux/scripts/capture
 ```
 
 ## Configuration
@@ -192,12 +193,12 @@ bind C-c command-prompt -p "new-session" "new-session -c '#{pane_current_path}' 
 ## Replicating on a New Machine
 
 ```bash
-# 1. Clone the repo
-git clone http://tools.ashukumar.com ~/Tools
-# or: git clone https://github.com/catchashu10/tools.git ~/Tools
+# 1. Clone the repo. The folder name can be anything.
+git clone http://tools.ashukumar.com <repo>
+# or: git clone https://github.com/catchashu10/tools.git <repo>
 
 # 2. Run the installer
-~/Tools/Tmux/install.sh
+<repo>/Tmux/install.sh
 
 # 3. Start tmux and install plugins
 tmux new -s main

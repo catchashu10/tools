@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Tmux setup installer (symlink mode)
-# Usage: git clone <repo> ~/Tools && ~/Tools/Tmux/install.sh
+# Usage: <repo>/Tmux/install.sh
 #
-# Creates symlinks from dotfile locations to this repo.
-# The repo folder must remain in place — it IS your config.
+# Creates symlinks from tmux locations to this repo.
+# The repo folder must remain in place because it stores the real config files.
+# Paths are resolved relative to this script so the repo folder can have any name.
 
 set -e
 

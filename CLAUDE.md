@@ -4,31 +4,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Is
 
-A dotfiles-style configuration repo that tracks shell and tmux configs, scripts, and themes. Real config files live here; dotfile locations (`~/.bashrc`, `~/.tmux.conf.local`, etc.) are symlinks pointing into this repo. Deleting this folder breaks all configs.
+A dotfiles-style configuration repo that tracks shell, Neovim, tmux configs, scripts, and themes. Most real tool configs live here and standard config locations symlink back into this repo. Shell rc files (`~/.bashrc`, `~/.zshrc`) are copied from repo templates instead, so each machine can customize them without dirtying the repo.
 
 ## Setup
 
 ```bash
-# Full setup on a new machine
-git clone http://tools.ashukumar.com ~/Tools && ~/Tools/install.sh
+# Full setup on a new machine. The repo folder can be named anything.
+git clone https://github.com/catchashu10/tools.git <repo> && <repo>/install.sh
 
 # Individual tool setup
-~/Tools/Shell/install.sh    # CLI tools + shell configs
-~/Tools/Tmux/install.sh     # Tmux + gpakosz framework + themes
+<repo>/Shell/install.sh    # CLI tools + shell configs
+<repo>/Nvim/install.sh     # LazyVim-based Neovim config
+<repo>/Tmux/install.sh     # Tmux + gpakosz framework + themes
+
+# Individual tool teardown
+<repo>/Shell/uninstall.sh
+<repo>/Nvim/uninstall.sh
+<repo>/Tmux/uninstall.sh
 ```
 
 No build system, test framework, or linter. All scripts are plain bash.
 
 ## Architecture
 
-### Symlink Model
+### Install Model
 
-Installers create symlinks FROM standard dotfile paths TO this repo:
-- `~/.bashrc` -> `Shell/config/bashrc`
+Installers copy machine-local shell rc files but symlink tool-owned config paths back to this repo:
+- `~/.bashrc` copied from `Shell/config/bashrc`
+- `~/.zshrc` copied from `Shell/config/zshrc`
 - `~/.config/nvim` -> `Nvim/lazyNvim`
 - `~/.tmux.conf.local` -> `Tmux/config/tmux.conf.local`
 - `~/.tmux/themes/` -> `Tmux/themes/` (directory symlink)
 - Scripts in `*/scripts/` -> `~/.local/bin/`
+
+Shell rc files are copied because they drift per system. Tool uninstallers should leave regular copied rc files alone, and should only restore backups when removing older repo-owned symlinks.
 
 Exception: `~/.gitconfig` is NOT symlinked (per-machine user.name/email). It uses `[include]` to pull in `Shell/config/delta.gitconfig`.
 
@@ -50,5 +59,7 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 
 - All text files use LF line endings (enforced via `.gitattributes` for WSL compatibility)
 - Scripts must be `#!/usr/bin/env bash` with `set -e`
-- Each tool folder follows the pattern: `README.md`, `install.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
+- Each tool folder follows the pattern: `README.md`, `install.sh`, `uninstall.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
+- Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic
+- Scripts should resolve paths relative to their own location (`SCRIPT_DIR=...`) and must not hardcode the repo's top-level folder name
 - `Learn/` contains reference guides (documentation only, no executable code)

@@ -1,13 +1,13 @@
 # Tools
 
-Centralized tracking of all tool configurations, scripts, and settings. Each subfolder contains the actual config files, and an installer that symlinks them into place.
+Centralized tracking of tool configurations, scripts, and settings. Each subfolder owns its tool-specific installer/uninstaller. Most tool configs are symlinked into place; machine-local shell rc files are copied from repo templates so they can drift per system.
 
 ## Purpose
 
 - Track all configurations in one place
 - Easily replicate setup on any new machine
 - Document settings, shortcuts, and known issues
-- Version control friendly (repo holds real files, dotfile locations are symlinks)
+- Version control friendly: repo holds defaults and tool-owned configs, while machine-local shell rc files can drift outside the repo
 
 ## Tool Index
 
@@ -25,7 +25,8 @@ Each tool folder follows this pattern:
 ```
 <repo>/<ToolName>/
 ├── README.md              # Full documentation
-├── install.sh             # Installer (creates symlinks)
+├── install.sh             # Tool-specific installer
+├── uninstall.sh           # Tool-specific uninstaller
 ├── config/                # Config files, when a tool has one default flavor
 ├── <flavor>/              # Flavor-specific config, e.g. Nvim/lazyNvim
 ├── scripts/               # Scripts (the real files live here)
@@ -33,12 +34,23 @@ Each tool folder follows this pattern:
 └── ...
 ```
 
-Shared installer utilities live in `setup/helpers.sh` (sourced by all install scripts).
+The top-level `install.sh` and `uninstall.sh` are thin orchestrators. They run tool-level scripts in a safe order for full setup/teardown, and can also target specific tools:
 
-After running `install.sh`, symlinks point **from** dotfile locations **to** this repo:
+```bash
+./install.sh              # install Shell, Nvim, Tmux
+./install.sh Nvim         # install only Nvim
+./install.sh Shell Tmux   # install only Shell and Tmux
+
+./uninstall.sh            # uninstall Tmux, Nvim, Shell
+./uninstall.sh Nvim       # uninstall only Nvim
 ```
-~/.bashrc               → <repo>/Shell/config/bashrc
-~/.zshrc                → <repo>/Shell/config/zshrc
+
+Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
+
+After running `install.sh`, machine-local shell rc files are copied from repo templates, while tool-owned configs/scripts are symlinked back to this repo:
+```
+~/.bashrc               copied from <repo>/Shell/config/bashrc
+~/.zshrc                copied from <repo>/Shell/config/zshrc
 ~/.config/starship.toml → <repo>/Shell/config/starship.toml
 ~/.config/bat/env       → <repo>/Shell/config/bat-env
 ~/.config/nvim          → <repo>/Nvim/lazyNvim
@@ -49,15 +61,17 @@ After running `install.sh`, symlinks point **from** dotfile locations **to** thi
 ~/.local/bin/tmux-capture → <repo>/Tmux/scripts/tmux-capture
 ```
 
-**Not symlinked:** `~/.gitconfig` stays per-machine (different user.name/email per host) and uses `[include]` to pull in `~/Tools/Shell/config/delta.gitconfig`.
+**Not symlinked:** `~/.gitconfig` stays per-machine (different user.name/email per host) and uses `[include]` to pull in `<repo>/Shell/config/delta.gitconfig`. `Shell/install.sh` writes the current absolute repo path into that include, so it works no matter where the repo was cloned.
 
-Edit the files anywhere — the symlink ensures both paths reference the same file.
+`Shell/install.sh` backs up any existing `~/.bashrc`/`~/.zshrc` to timestamped `.bak.*` files before copying the repo templates. `Shell/uninstall.sh` leaves copied rc files in place; it only restores backups when removing an older owned symlink.
 
 ## Quick Setup on a New Machine
 
 ```bash
-git clone http://tools.ashukumar.com ~/Tools
-~/Tools/install.sh
+git clone https://github.com/catchashu10/tools.git <repo>
+<repo>/install.sh
 ```
 
-The top-level `install.sh` runs all tool installers in order. Each tool's README also has a standalone "Replicating on a New Machine" section.
+The scripts do not depend on the clone folder name.
+
+The top-level `install.sh` runs all tool installers in order. Each tool can also be installed or uninstalled independently with its own `install.sh` or `uninstall.sh`.
