@@ -57,7 +57,7 @@ fi
 
 section "gpakosz/.tmux framework"
 if [ -d "$HOME/.tmux/.git" ]; then
-    if confirm_change "Update existing ~/.tmux framework with git pull"; then
+    if confirm_change "Update existing ~/.tmux framework with git pull" "git -C $HOME/.tmux pull --ff-only"; then
         git -C "$HOME/.tmux" pull
         ok "Updated ~/.tmux"
     else
@@ -66,7 +66,7 @@ if [ -d "$HOME/.tmux/.git" ]; then
 elif [ -e "$HOME/.tmux" ]; then
     warn "~/.tmux exists but is not a git checkout; leaving it untouched"
 else
-    if confirm_change "Clone gpakosz/.tmux framework into ~/.tmux"; then
+    if confirm_change "Clone gpakosz/.tmux framework into ~/.tmux" "git clone https://github.com/gpakosz/.tmux.git $HOME/.tmux"; then
         git clone https://github.com/gpakosz/.tmux.git "$HOME/.tmux"
         ok "Cloned ~/.tmux framework"
     else
@@ -85,7 +85,7 @@ symlink_config "$SCRIPT_DIR/config/tmux.conf.local" "$HOME/.tmux.conf.local"
 
 section "Themes"
 if [ -d "$HOME/.tmux/themes" ] && [ ! -L "$HOME/.tmux/themes" ]; then
-    if confirm_change "Back up existing non-symlink ~/.tmux/themes before replacing with symlink"; then
+    if confirm_change "Back up existing non-symlink ~/.tmux/themes before replacing with symlink" "mv $HOME/.tmux/themes $HOME/.tmux/themes.bak.$(date +%Y%m%d-%H%M%S)"; then
         timestamp="$(date +%Y%m%d-%H%M%S)"
         mv "$HOME/.tmux/themes" "$HOME/.tmux/themes.bak.$timestamp"
         ok "Backed up ~/.tmux/themes -> ~/.tmux/themes.bak.$timestamp"
@@ -122,7 +122,7 @@ else
     warn "~/.local/bin not in current PATH"
     SHELL_RC="$HOME/.bashrc"
     [ -f "$HOME/.zshrc" ] && SHELL_RC="$HOME/.zshrc"
-    if confirm_change "Append ~/.local/bin PATH export to $SHELL_RC"; then
+    if confirm_change "Append ~/.local/bin PATH export to $SHELL_RC" "printf 'export PATH=\"$HOME/.local/bin:$PATH\"\n' >> $SHELL_RC"; then
         echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_RC"
         ok "Added PATH export to $SHELL_RC"
     fi

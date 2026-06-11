@@ -55,14 +55,14 @@ copy_shell_rc() {
             ok "$dest already matches repo template"
             return 0
         fi
-        if ! confirm_change "Back up existing $dest and copy repo template over it"; then
+        if ! confirm_change "Back up existing $dest and copy repo template over it" "cp $src $dest"; then
             skip "Left $dest unchanged"
             return 0
         fi
         mv "$dest" "$backup"
         ok "Backed up $dest -> $backup"
     else
-        if ! confirm_change "Create local shell rc file from repo template: $dest"; then
+        if ! confirm_change "Create local shell rc file from repo template: $dest" "cp $src $dest"; then
             skip "Did not create $dest"
             return 0
         fi
@@ -80,7 +80,7 @@ install_missing_packages() {
     [ "${#packages[@]}" -gt 0 ] || return 0
 
     if command -v apt >/dev/null 2>&1; then
-        if confirm_change "Run apt update and install package(s): ${packages[*]}"; then
+        if confirm_change "Run apt update and install package(s): ${packages[*]}" "sudo apt update && sudo apt install -y ${packages[*]}"; then
             sudo apt update
             for pkg in "${packages[@]}"; do
                 if sudo apt install -y "$pkg" 2>/dev/null; then
@@ -94,7 +94,7 @@ install_missing_packages() {
             failed=("${packages[@]}")
         fi
     elif command -v brew >/dev/null 2>&1; then
-        if confirm_change "Install package(s) with brew: ${packages[*]}"; then
+        if confirm_change "Install package(s) with brew: ${packages[*]}" "brew install ${packages[*]}"; then
             for pkg in "${packages[@]}"; do
                 if brew install "$pkg" 2>/dev/null; then
                     ok "$pkg installed"
@@ -136,7 +136,7 @@ ensure_delta_include() {
         return 0
     fi
 
-    if ! confirm_change "Update ~/.gitconfig to include $delta_include_path"; then
+    if ! confirm_change "Update ~/.gitconfig to include $delta_include_path" "add an [include] path for $delta_include_path to ~/.gitconfig"; then
         skip "Left ~/.gitconfig unchanged"
         return 0
     fi
@@ -218,7 +218,7 @@ if command -v starship >/dev/null 2>&1; then
     ok "starship found: $(command -v starship)"
 else
     warn "starship not found"
-    if confirm_change "Install starship to ~/.local/bin via starship.rs installer"; then
+    if confirm_change "Install starship to ~/.local/bin via starship.rs installer" "curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir $HOME/.local/bin"; then
         if ensure_dir "$HOME/.local/bin" "Create local bin directory"; then
             curl -sS https://starship.rs/install.sh | sh -s -- --bin-dir "$HOME/.local/bin" -y
             ok "Starship installer completed"
@@ -231,7 +231,7 @@ if [ -d "$HOME/.nvm" ]; then
     ok "NVM found at ~/.nvm"
 else
     warn "NVM not found"
-    if confirm_change "Install NVM into ~/.nvm via upstream install script"; then
+    if confirm_change "Install NVM into ~/.nvm via upstream install script" "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash"; then
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
         ok "NVM installed, restart shell to use"
     fi

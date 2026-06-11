@@ -136,7 +136,7 @@ skip() { status_line "$GRAY" "-" "SKIP" "$1"; }
 dry() { status_line "$MAGENTA" "◦" "DRY" "$1"; }
 
 confirm_change() {
-    local message="$1"
+    local message="$1" later_hint="${2:-}"
 
     if [ "$DRY_RUN" = "1" ]; then
         dry "Would: $message"
@@ -150,10 +150,12 @@ confirm_change() {
 
     if [ ! -t 0 ]; then
         warn "Skipping, confirmation required in interactive shell: $message"
+        [ -z "$later_hint" ] || info "Later: $later_hint"
         return 1
     fi
 
     printf '  %s %s\n' "$(paint "$YELLOW" '?')" "$(paint "$YELLOW$BOLD" 'CONFIRM') $message"
+    [ -z "$later_hint" ] || printf '    %s\n' "$(paint "$CYAN" "Later: $later_hint")"
     printf '    Proceed? [y/N] '
     local answer
     read -r answer
@@ -164,6 +166,7 @@ confirm_change() {
             ;;
         *)
             skip "Declined: $message"
+            [ -z "$later_hint" ] || info "Later: $later_hint"
             return 1
             ;;
     esac
@@ -217,7 +220,7 @@ ensure_dir() {
         return 1
     fi
 
-    if confirm_change "$reason: $dir"; then
+    if confirm_change "$reason: $dir" "mkdir -p $dir"; then
         mkdir -p "$dir"
         ok "Created directory: $dir"
         return 0
@@ -256,7 +259,7 @@ symlink_config() {
         local timestamp backup
         timestamp="$(date +%Y%m%d-%H%M%S)"
         backup="$dest.bak.$timestamp"
-        if confirm_change "Back up existing non-symlink $dest and replace it with symlink"; then
+        if confirm_change "Back up existing non-symlink $dest and replace it with symlink" "mv $dest $backup && ln -s $src $dest"; then
             mv "$dest" "$backup"
             ln -s "$src" "$dest"
             ok "Backed up $dest -> $backup"
@@ -323,11 +326,11 @@ install_pkg() {
     fi
 
     if command -v apt >/dev/null 2>&1; then
-        if confirm_change "Install package(s) with apt: $*"; then
+        if confirm_change "Install package(s) with apt: $*" "sudo apt install -y $*"; then
             sudo apt install -y "$@"
         fi
     elif command -v brew >/dev/null 2>&1; then
-        if confirm_change "Install package(s) with brew: $*"; then
+        if confirm_change "Install package(s) with brew: $*" "brew install $*"; then
             brew install "$@"
         fi
     else
@@ -341,7 +344,7 @@ install_pkg() {
 install_github_binary() {
     local repo="$1" binary="$2"
 
-    if ! confirm_change "Download and install $binary from GitHub releases into ~/.local/bin"; then
+    if ! confirm_change "Download and install $binary from GitHub releases into ~/.local/bin" "rerun this installer with --allow-all or install $binary manually from https://github.com/$repo/releases"; then
         return 1
     fi
 

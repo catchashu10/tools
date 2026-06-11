@@ -50,7 +50,7 @@ restore_backup_if_allowed() {
         return 0
     fi
 
-    if confirm_change "Restore backup $backup to $dest"; then
+    if confirm_change "Restore backup $backup to $dest" "mv $backup $dest"; then
         mv "$backup" "$dest"
         ok "Restored $dest from $backup"
         RESTORED=$((RESTORED + 1))

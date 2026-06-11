@@ -60,14 +60,14 @@ backup_or_remove() {
     fi
 
     if [ "$FORCE_CLEAN" = "1" ]; then
-        if confirm_change "Remove existing path: $path"; then
+        if confirm_change "Remove existing path: $path" "rm -rf $path"; then
             rm -rf "$path"
             ok "Removed $path"
         else
             skip "Left $path unchanged"
         fi
     else
-        if confirm_change "Back up existing path: $path -> $backup"; then
+        if confirm_change "Back up existing path: $path -> $backup" "mv $path $backup"; then
             mv "$path" "$backup"
             ok "Backed up $path -> $backup"
         else

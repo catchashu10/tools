@@ -52,7 +52,7 @@ restore_backup_if_allowed() {
         return 0
     fi
 
-    if confirm_change "Restore backup $backup to $dest"; then
+    if confirm_change "Restore backup $backup to $dest" "mv $backup $dest"; then
         if [ "$DRY_RUN" = "1" ]; then
             dry "Would restore backup $backup to $dest"
             return 0
@@ -121,7 +121,7 @@ remove_delta_include() {
         return 0
     fi
 
-    if ! confirm_change "Remove delta.gitconfig include block from ~/.gitconfig"; then
+    if ! confirm_change "Remove delta.gitconfig include block from ~/.gitconfig" "edit ~/.gitconfig and remove the delta.gitconfig [include] block"; then
         skip "Left ~/.gitconfig unchanged"
         SKIPPED=$((SKIPPED + 1))
         return 0
