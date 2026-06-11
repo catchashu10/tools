@@ -13,19 +13,21 @@ Centralized tracking of all tool configurations, scripts, and settings. Each sub
 
 | Tool | Folder | Status | Description |
 |------|--------|--------|-------------|
-| [Shell](Shell/) | `~/Tools/Shell/` | Configured | Bash/Zsh configs, CLI tools (bat, eza, fd, rg, fzf, zoxide), Starship prompt |
-| [Tmux](Tmux/) | `~/Tools/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 15 themes, capture tools |
-| [Learn](Learn/) | `~/Tools/Learn/` | Maintained | In-depth learning guides for all tools |
+| [Shell](Shell/) | `<repo>/Shell/` | Configured | Bash/Zsh configs, CLI tools (bat, eza, fd, rg, fzf, zoxide), Starship prompt |
+| [Nvim](Nvim/) | `<repo>/Nvim/` | Configured | LazyVim-based Neovim setup with flavor support |
+| [Tmux](Tmux/) | `<repo>/Tmux/` | Configured | Terminal multiplexer with gpakosz framework, 15 themes, capture tools |
+| [Learn](Learn/) | `<repo>/Learn/` | Maintained | In-depth learning guides for all tools |
 
 ## Structure
 
 Each tool folder follows this pattern:
 
 ```
-~/Tools/<ToolName>/
+<repo>/<ToolName>/
 ├── README.md              # Full documentation
 ├── install.sh             # Installer (creates symlinks)
-├── config/                # Config files (the real files live here)
+├── config/                # Config files, when a tool has one default flavor
+├── <flavor>/              # Flavor-specific config, e.g. Nvim/lazyNvim
 ├── scripts/               # Scripts (the real files live here)
 ├── themes/                # Themes (if applicable)
 └── ...
@@ -35,15 +37,16 @@ Shared installer utilities live in `setup/helpers.sh` (sourced by all install sc
 
 After running `install.sh`, symlinks point **from** dotfile locations **to** this repo:
 ```
-~/.bashrc               → ~/Tools/Shell/config/bashrc
-~/.zshrc                → ~/Tools/Shell/config/zshrc
-~/.config/starship.toml → ~/Tools/Shell/config/starship.toml
-~/.config/bat/env        → ~/Tools/Shell/config/bat-env
-~/.tmux.conf.local      → ~/Tools/Tmux/config/tmux.conf.local
-~/.local/bin/bat-theme   → ~/Tools/Shell/scripts/bat-theme
-~/.local/bin/tmux-theme  → ~/Tools/Tmux/scripts/tmux-theme
-~/.local/bin/capture     → ~/Tools/Tmux/scripts/capture
-~/.local/bin/tmux-capture→ ~/Tools/Tmux/scripts/tmux-capture
+~/.bashrc               → <repo>/Shell/config/bashrc
+~/.zshrc                → <repo>/Shell/config/zshrc
+~/.config/starship.toml → <repo>/Shell/config/starship.toml
+~/.config/bat/env       → <repo>/Shell/config/bat-env
+~/.config/nvim          → <repo>/Nvim/lazyNvim
+~/.tmux.conf.local      → <repo>/Tmux/config/tmux.conf.local
+~/.local/bin/bat-theme  → <repo>/Shell/scripts/bat-theme
+~/.local/bin/tmux-theme → <repo>/Tmux/scripts/tmux-theme
+~/.local/bin/capture    → <repo>/Tmux/scripts/capture
+~/.local/bin/tmux-capture → <repo>/Tmux/scripts/tmux-capture
 ```
 
 **Not symlinked:** `~/.gitconfig` stays per-machine (different user.name/email per host) and uses `[include]` to pull in `~/Tools/Shell/config/delta.gitconfig`.

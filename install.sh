@@ -18,7 +18,12 @@ echo "--- Shell Setup ---"
 "$SCRIPT_DIR/Shell/install.sh"
 echo ""
 
-# 2. Tmux second — needs shell configs in place for PATH
+# 2. Nvim — LazyVim-based Neovim config
+echo "--- Nvim Setup ---"
+"$SCRIPT_DIR/Nvim/install.sh"
+echo ""
+
+# 3. Tmux — needs shell configs in place for PATH
 echo "--- Tmux Setup ---"
 "$SCRIPT_DIR/Tmux/install.sh"
 echo ""

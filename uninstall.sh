@@ -56,7 +56,12 @@ remove_symlink "$HOME/.zshrc"
 remove_symlink "$HOME/.config/starship.toml"
 remove_symlink "$HOME/.config/bat/env"
 
-# -- 2. Shell scripts in ~/.local/bin ----------------------------------------
+# -- 2. Nvim config symlink --------------------------------------------------
+
+step "Removing nvim config symlink..."
+remove_symlink "$HOME/.config/nvim"
+
+# -- 3. Shell scripts in ~/.local/bin ----------------------------------------
 
 step "Removing shell scripts from ~/.local/bin..."
 

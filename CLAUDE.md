@@ -25,6 +25,7 @@ No build system, test framework, or linter. All scripts are plain bash.
 
 Installers create symlinks FROM standard dotfile paths TO this repo:
 - `~/.bashrc` -> `Shell/config/bashrc`
+- `~/.config/nvim` -> `Nvim/lazyNvim`
 - `~/.tmux.conf.local` -> `Tmux/config/tmux.conf.local`
 - `~/.tmux/themes/` -> `Tmux/themes/` (directory symlink)
 - Scripts in `*/scripts/` -> `~/.local/bin/`
@@ -49,5 +50,5 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 
 - All text files use LF line endings (enforced via `.gitattributes` for WSL compatibility)
 - Scripts must be `#!/usr/bin/env bash` with `set -e`
-- Each tool folder follows the pattern: `README.md`, `install.sh`, `config/`, `scripts/`, `themes/`
+- Each tool folder follows the pattern: `README.md`, `install.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
 - `Learn/` contains reference guides (documentation only, no executable code)
