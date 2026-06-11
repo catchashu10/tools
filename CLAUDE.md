@@ -21,6 +21,11 @@ git clone https://github.com/catchashu10/tools.git <repo> && <repo>/install.sh
 <repo>/Shell/uninstall.sh
 <repo>/Nvim/uninstall.sh
 <repo>/Tmux/uninstall.sh
+
+# Health check, read-only
+<repo>/health.sh             # Repo + Shell + Nvim + Tmux
+<repo>/health.sh Nvim        # Only Nvim
+<repo>/health.sh --color=always
 ```
 
 No build system, test framework, or linter. All scripts are plain bash.
@@ -61,5 +66,6 @@ Starship uses 7 semantic palette colors: `success`, `error`, `directory`, `git_b
 - Scripts must be `#!/usr/bin/env bash` with `set -e`
 - Each tool folder follows the pattern: `README.md`, `install.sh`, `uninstall.sh`, `config/` or flavor folders like `lazyNvim/`, `scripts/`, `themes/`
 - Top-level `install.sh` and `uninstall.sh` are orchestration wrappers and should call tool-specific scripts rather than duplicating tool logic
+- Top-level `health.sh` is read-only and should report setup issues without modifying files, installing packages, or running sync/update commands
 - Scripts should resolve paths relative to their own location (`SCRIPT_DIR=...`) and must not hardcode the repo's top-level folder name
 - `Learn/` contains reference guides (documentation only, no executable code)

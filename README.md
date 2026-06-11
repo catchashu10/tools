@@ -34,7 +34,7 @@ Each tool folder follows this pattern:
 └── ...
 ```
 
-The top-level `install.sh` and `uninstall.sh` are thin orchestrators. They run tool-level scripts in a safe order for full setup/teardown, and can also target specific tools:
+The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestration scripts. Install/uninstall scripts run tool-level scripts in a safe order for setup/teardown, and can also target specific tools. `health.sh` is read-only and checks whether expected files, symlinks, commands, and generated folders look correct.
 
 ```bash
 ./install.sh              # install Shell, Nvim, Tmux
@@ -43,6 +43,11 @@ The top-level `install.sh` and `uninstall.sh` are thin orchestrators. They run t
 
 ./uninstall.sh            # uninstall Tmux, Nvim, Shell
 ./uninstall.sh Nvim       # uninstall only Nvim
+
+./health.sh               # check Repo, Shell, Nvim, Tmux
+./health.sh Nvim          # check only Nvim
+./health.sh Shell Tmux    # check selected tools
+./health.sh --color=always # force colored output, useful when piped/logged
 ```
 
 Shared installer utilities live in `setup/helpers.sh` (sourced by tool scripts). Scripts resolve paths relative to their own location, so the repo can be cloned under any folder name.
@@ -74,4 +79,4 @@ git clone https://github.com/catchashu10/tools.git <repo>
 
 The scripts do not depend on the clone folder name.
 
-The top-level `install.sh` runs all tool installers in order. Each tool can also be installed or uninstalled independently with its own `install.sh` or `uninstall.sh`.
+The top-level `install.sh` runs all tool installers in order. Each tool can also be installed or uninstalled independently with its own `install.sh` or `uninstall.sh`. Run `health.sh` any time to safely inspect the expected setup without changing system state.
