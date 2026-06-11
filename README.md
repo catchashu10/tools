@@ -69,7 +69,7 @@ Install/uninstall safety model:
 - Pass `--check` to run `health.sh` after install completes. With selected tools, only those tool checks run; with no selected tools, all health checks run.
 - Pass `--allow-all` when you intentionally want the installer/uninstaller to perform those non-symlink changes without stopping for confirmation.
 - `--color=always`, `--color=never`, and `--no-color` are available on install, uninstall, and health scripts.
-- Install and uninstall runs end with grouped summaries showing `OK`, `WARN`, `ERROR`, `SKIP`, `DRY`, and `INFO` counts, plus details for warnings, skipped actions, errors, and dry-run plans.
+- Install and uninstall runs end with grouped summaries showing elapsed time, `OK`, `WARN`, `ERROR`, `SKIP`, `DRY`, and `INFO` counts, plus details for warnings, skipped actions, errors, and dry-run plans.
 
 After running `install.sh`, machine-local shell rc files are copied from repo templates, while tool-owned configs/scripts are symlinked back to this repo:
 ```

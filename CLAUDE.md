@@ -51,7 +51,7 @@ Exception: `~/.gitconfig` is NOT symlinked (per-machine user.name/email). It use
 ### Shared Helpers
 
 All `install.sh` and `uninstall.sh` scripts source `setup/helpers.sh` which provides:
-- shared UI helpers with section dividers, status icons, color controls, clear mode labels, and final grouped summaries
+- shared UI helpers with section dividers, status icons, color controls, clear mode labels, elapsed time, and final grouped summaries
 - `confirm_change message` - prompts before non-symlink system changes unless `--allow-all` is active; in `--dry-run` mode it reports the planned change and returns without modifying state
 - `ensure_dir path reason` - creates directories only after confirmation when needed
 - `symlink_config src dest` - creates/updates symlinks; prompts before backing up/replacing non-symlink destinations

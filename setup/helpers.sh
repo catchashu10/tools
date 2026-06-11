@@ -9,6 +9,7 @@ DRY_RUN="${DRY_RUN:-0}"
 COLOR_MODE="${COLOR_MODE:-auto}"
 SUMMARY_DEFER_FILE="${SUMMARY_DEFER_FILE:-}"
 USE_COLOR=0
+RUN_START_SECONDS="${RUN_START_SECONDS:-$SECONDS}"
 
 BOLD=""
 RESET=""
@@ -293,15 +294,24 @@ print_summary_items() {
     done
 }
 
+format_elapsed() {
+    local elapsed="$1"
+    if [ "$elapsed" -ge 60 ]; then
+        printf '%dm %02ds' "$((elapsed / 60))" "$((elapsed % 60))"
+    else
+        printf '%ss' "$elapsed"
+    fi
+}
+
 _print_action_summary() {
     local title="${1:-Run summary}"
+    local elapsed="$((SECONDS - RUN_START_SECONDS))"
     echo ""
     rule
-    printf '%s
-' "$(paint "$BOLD$MAGENTA" "$title")"
+    printf '%s\n' "$(paint "$BOLD$MAGENTA" "$title")"
     rule
-    printf '  %s %s  %s %s  %s %s  %s %s  %s %s  %s %s
-'         "$(paint "$GREEN$BOLD" 'OK')" "$SUMMARY_OK"         "$(paint "$YELLOW$BOLD" 'WARN')" "$SUMMARY_WARN"         "$(paint "$RED$BOLD" 'ERROR')" "$SUMMARY_ERROR"         "$(paint "$GRAY$BOLD" 'SKIP')" "$SUMMARY_SKIP"         "$(paint "$MAGENTA$BOLD" 'DRY')" "$SUMMARY_DRY"         "$(paint "$CYAN$BOLD" 'INFO')" "$SUMMARY_INFO"
+    printf '  %s %s\n' "$(paint "$CYAN$BOLD" 'Completed in')" "$(format_elapsed "$elapsed")"
+    printf '  %s %s  %s %s  %s %s  %s %s  %s %s  %s %s\n'         "$(paint "$GREEN$BOLD" 'OK')" "$SUMMARY_OK"         "$(paint "$YELLOW$BOLD" 'WARN')" "$SUMMARY_WARN"         "$(paint "$RED$BOLD" 'ERROR')" "$SUMMARY_ERROR"         "$(paint "$GRAY$BOLD" 'SKIP')" "$SUMMARY_SKIP"         "$(paint "$MAGENTA$BOLD" 'DRY')" "$SUMMARY_DRY"         "$(paint "$CYAN$BOLD" 'INFO')" "$SUMMARY_INFO"
 
     if [ "$SUMMARY_ERROR" -gt 0 ] || [ "$SUMMARY_WARN" -gt 0 ] || [ "$SUMMARY_SKIP" -gt 0 ] || [ "$SUMMARY_DRY" -gt 0 ]; then
         echo ""
