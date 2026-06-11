@@ -10,6 +10,7 @@
 #   ./health.sh Shell            # check one tool
 #   ./health.sh Shell Nvim       # check selected tools
 #   ./health.sh Backups          # list known timestamped backups
+#   ./health.sh ShellCheck       # lint shell scripts when shellcheck is installed
 #   ./health.sh --color=always   # force ANSI colors, useful when output is piped
 #   ./health.sh --no-color       # disable ANSI colors
 #
@@ -19,9 +20,12 @@
 
 set -u
 
+# User-facing messages intentionally use literal ~ paths.
+# shellcheck disable=SC2088
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEFAULT_TOOLS=(Repo Shell Nvim Tmux)
-AVAILABLE_CHECKS=(Repo Shell Nvim Tmux Backups)
+AVAILABLE_CHECKS=(Repo Shell Nvim Tmux Backups ShellCheck)
 
 PASS_COUNT=0
 WARN_COUNT=0
@@ -33,7 +37,6 @@ USE_COLOR=0
 
 # Color palette. Values are set after argument parsing by setup_color().
 BOLD=""
-DIM=""
 RESET=""
 GREEN=""
 YELLOW=""
@@ -68,7 +71,6 @@ setup_color() {
 
     if [ "$USE_COLOR" -eq 1 ]; then
         BOLD=$'\033[1m'
-        DIM=$'\033[2m'
         RESET=$'\033[0m'
         GREEN=$'\033[32m'
         YELLOW=$'\033[33m'
@@ -143,6 +145,10 @@ USAGE
 Backup discovery:
   Backups lists known .bak.* files created by installers, including shell rc,
   Neovim runtime/config, and Tmux theme backups. It is read-only.
+
+Shell linting:
+  ShellCheck runs shellcheck across tracked *.sh scripts when shellcheck is
+  installed. Missing shellcheck is reported as a warning, not a failure.
 USAGE
 }
 
@@ -494,6 +500,64 @@ check_backups() {
     print_backup_matches "Tmux"         "$HOME/.tmux/themes.bak.*"
 }
 
+
+check_shellcheck() {
+    section "ShellCheck"
+
+    if ! command -v shellcheck >/dev/null 2>&1; then
+        warn "shellcheck command not found; install shellcheck to run shell lint checks"
+        info "Debian/Ubuntu: sudo apt install shellcheck"
+        info "macOS/Homebrew: brew install shellcheck"
+        return 0
+    fi
+
+    local version
+    version="$(shellcheck --version 2>/dev/null | sed -n 's/^version: //p' | head -1)"
+    pass "shellcheck command found: $(command -v shellcheck)${version:+ (version $version)}"
+
+    local scripts=()
+    if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        while IFS= read -r script; do
+            [ -n "$script" ] || continue
+            scripts+=("$SCRIPT_DIR/$script")
+        done < <(git -C "$SCRIPT_DIR" ls-files '*.sh' | sort)
+    else
+        while IFS= read -r script; do
+            [ -n "$script" ] || continue
+            scripts+=("$script")
+        done < <(find "$SCRIPT_DIR" -name '*.sh' -type f -print | sort)
+    fi
+
+    if [ "${#scripts[@]}" -eq 0 ]; then
+        warn "No shell scripts found to lint"
+        return 0
+    fi
+
+    local shellcheck_args=(
+        -x
+        # Dynamic helper sourcing is validated by bash -n and runtime smoke tests.
+        -e SC1091
+        # Some option variables are consumed by setup/helpers.sh after sourcing.
+        -e SC2034
+        # User-facing status messages intentionally use literal ~ path labels.
+        -e SC2088
+        # One installer writes a literal PATH export line for future shell sessions.
+        -e SC2016
+    )
+
+    local output status
+    output="$(shellcheck "${shellcheck_args[@]}" "${scripts[@]}" 2>&1)"
+    status=$?
+
+    if [ "$status" -eq 0 ]; then
+        pass "shellcheck passed for ${#scripts[@]} shell scripts"
+    else
+        fail "shellcheck found issues in ${#scripts[@]} shell scripts"
+        printf '%s
+' "$output" | sed 's/^/        /'
+    fi
+}
+
 run_check() {
     case "$1" in
         Repo) check_repo ;;
@@ -501,6 +565,7 @@ run_check() {
         Nvim) check_nvim ;;
         Tmux) check_tmux ;;
         Backups) check_backups ;;
+        ShellCheck) check_shellcheck ;;
         *)
             echo "ERROR: unknown health check: $1" >&2
             usage >&2

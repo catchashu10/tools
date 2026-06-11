@@ -7,7 +7,11 @@
 
 set -e
 
+# ALLOW_ALL and COLOR_MODE are read by setup/helpers.sh after argument parsing.
+# shellcheck disable=SC2034
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=setup/helpers.sh
 source "$SCRIPT_DIR/../setup/helpers.sh"
 
 FLAVOR="lazyNvim"
@@ -88,9 +92,24 @@ if [ ! -d "$NVIM_FLAVOR_DIR" ]; then
 fi
 
 section "Dependencies"
-command -v nvim >/dev/null 2>&1 && ok "nvim found" || { warn "nvim not found"; install_pkg neovim; }
-command -v git >/dev/null 2>&1 && ok "git found" || { warn "git not found"; install_pkg git; }
-command -v rg >/dev/null 2>&1 && ok "ripgrep found" || { warn "ripgrep not found"; install_pkg ripgrep; }
+if command -v nvim >/dev/null 2>&1; then
+    ok "nvim found"
+else
+    warn "nvim not found"
+    install_pkg neovim
+fi
+if command -v git >/dev/null 2>&1; then
+    ok "git found"
+else
+    warn "git not found"
+    install_pkg git
+fi
+if command -v rg >/dev/null 2>&1; then
+    ok "ripgrep found"
+else
+    warn "ripgrep not found"
+    install_pkg ripgrep
+fi
 if command -v fd >/dev/null 2>&1 || command -v fdfind >/dev/null 2>&1; then
     ok "fd found"
 else

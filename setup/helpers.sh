@@ -11,7 +11,6 @@ SUMMARY_DEFER_FILE="${SUMMARY_DEFER_FILE:-}"
 USE_COLOR=0
 
 BOLD=""
-DIM=""
 RESET=""
 GREEN=""
 YELLOW=""
@@ -87,7 +86,6 @@ setup_ui() {
 
     if [ "$USE_COLOR" -eq 1 ]; then
         BOLD=$'\033[1m'
-        DIM=$'\033[2m'
         RESET=$'\033[0m'
         GREEN=$'\033[32m'
         YELLOW=$'\033[33m'

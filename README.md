@@ -54,6 +54,7 @@ The top-level `install.sh`, `uninstall.sh`, and `health.sh` are thin orchestrati
 ./health.sh Nvim          # check only Nvim
 ./health.sh Shell Tmux    # check selected tools
 ./health.sh Backups       # list known installer-created backups
+./health.sh ShellCheck    # lint shell scripts when shellcheck is installed
 ./health.sh --color=always # force colored output, useful when piped/logged
 ```
 
@@ -93,6 +94,14 @@ After running `install.sh`, machine-local shell rc files are copied from repo te
 ```
 
 This read-only check lists known shell rc, Neovim runtime/config, and Tmux theme backups created by the installers.
+
+For shell linting, install `shellcheck` and run:
+
+```bash
+./health.sh ShellCheck
+```
+
+If `shellcheck` is not installed, this check reports a warning with install hints instead of failing.
 
 ## Quick Setup on a New Machine
 

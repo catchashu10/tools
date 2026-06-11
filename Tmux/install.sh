@@ -6,7 +6,14 @@
 
 set -e
 
+# User-facing messages intentionally use literal ~ paths.
+# shellcheck disable=SC2088
+
+# ALLOW_ALL and COLOR_MODE are read by setup/helpers.sh after argument parsing.
+# shellcheck disable=SC2034
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=setup/helpers.sh
 source "$SCRIPT_DIR/../setup/helpers.sh"
 
 usage() {
